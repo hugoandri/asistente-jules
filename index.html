@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Asistente Jules - Planillas Diarias</title>
+<title>Asistente Jules - Planillas de Lives</title>
 <style>
 :root {
   --primary: #1e3a8a;
@@ -16,7 +16,7 @@
   --border: #e2e8f0;
   --success: #16a34a;
   --danger: #dc2626;
-  --warning: #d97706;
+  --live-red: #ef4444;
 }
 * { box-sizing: border-box; }
 body {
@@ -26,13 +26,13 @@ body {
   color: var(--text);
   background: var(--bg);
 }
-.app { max-width: 960px; margin: 0 auto; }
+.app { max-width: 980px; margin: 0 auto; }
 
 /* HEADER */
 header {
   background: linear-gradient(135deg, #0f172a, #1e3a8a);
   color: white;
-  padding: 22px 24px;
+  padding: 20px 24px;
   border-radius: 18px;
   margin-bottom: 16px;
   box-shadow: 0 4px 16px rgba(15,23,42,0.12);
@@ -41,27 +41,53 @@ header {
 h1 { margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px; }
 .header-subtitle { color: #cbd5e1; font-size: 0.92rem; margin-top: 6px; }
 
-/* FECHA Y NAVEGACIÓN */
-.date-bar {
-  background: white;
+/* BANNER DE LIVE ACTIVO */
+.active-live-bar {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
   border-radius: 14px;
   padding: 12px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
   margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
-.date-nav { display: flex; align-items: center; gap: 8px; }
-.date-picker-wrap { display: flex; align-items: center; gap: 8px; font-weight: 600; }
-.date-picker-wrap input[type="date"] {
-  padding: 7px 10px;
+.live-indicator { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; }
+.live-dot {
+  width: 12px;
+  height: 12px;
+  background: var(--live-red);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: livePulse 1.6s infinite;
+}
+@keyframes livePulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* NAVEGACIÓN DE VISTAS (TABS) */
+.view-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.tab-btn {
+  background: white;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 0.95rem;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+.tab-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 2px 6px rgba(30,58,138,0.25);
 }
 
 /* CARDS RESUMEN */
@@ -112,7 +138,7 @@ h1 { margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px;
   border-radius: 10px;
   padding: 10px 16px;
   font-weight: 650;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -120,14 +146,12 @@ h1 { margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px;
   transition: transform 0.1s, opacity 0.2s;
 }
 .btn:active { transform: scale(0.98); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
-.btn-success { background: var(--success); color: white; }
+.btn-primary:hover { background: var(--primary-hover); }
 .btn-danger { background: #fee2e2; color: var(--danger); border: 1px solid #fecaca; }
-.btn-danger:hover:not(:disabled) { background: #fecaca; }
 .btn-secondary { background: #f1f5f9; color: var(--text); border: 1px solid var(--border); }
-.btn-secondary:hover:not(:disabled) { background: #e2e8f0; }
+.btn-secondary:hover { background: #e2e8f0; }
+.btn-mini { padding: 5px 10px; border-radius: 7px; font-size: 0.8rem; }
 
 .status-badge {
   display: inline-flex;
@@ -139,25 +163,17 @@ h1 { margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px;
   font-weight: 600;
 }
 .status-badge.off { background: #e2e8f0; color: #475569; }
-.status-badge.ready { background: #dbeafe; color: #1e40af; }
-.status-badge.listening { background: #dcfce7; color: #15803d; animation: pulse 1.8s infinite; }
-
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.65; }
-  100% { opacity: 1; }
-}
+.status-badge.listening { background: #dcfce7; color: #15803d; }
 
 .conversation-step {
-  padding: 12px;
+  padding: 14px;
   background: white;
   border-radius: 10px;
   border: 1px solid #e2e8f0;
   margin-top: 10px;
-  font-size: 0.96rem;
 }
-.conversation-step .prompt-text { font-weight: 700; color: #1e3a8a; }
-.conversation-step .heard-text { font-size: 0.88rem; color: #64748b; margin-top: 4px; }
+.conversation-step .prompt-text { font-weight: 700; color: #1e3a8a; font-size: 1.05rem; }
+.conversation-step .heard-text { font-size: 0.9rem; color: #64748b; margin-top: 6px; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
 .chip {
   background: white;
@@ -175,16 +191,17 @@ h1 { margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px;
   gap: 10px;
   align-items: center;
 }
-input {
+input, select {
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 0.95rem;
   width: 100%;
+  font-family: inherit;
 }
-input:focus { outline: none; border-color: var(--accent); }
+input:focus, select:focus { outline: none; border-color: var(--accent); }
 
-/* PLANILLA Y AGRUPACIÓN POR NOMBRES */
+/* PLANILLA Y GRUPOS DE CLIENTES */
 .person-group {
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -203,10 +220,7 @@ input:focus { outline: none; border-color: var(--accent); }
 }
 .person-header .name { font-size: 1.05rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
 .person-header .subtotal { font-size: 1.1rem; color: #047857; }
-.items-table {
-  width: 100%;
-  border-collapse: collapse;
-}
+.items-table { width: 100%; border-collapse: collapse; }
 .items-table th, .items-table td {
   padding: 10px 14px;
   text-align: left;
@@ -215,35 +229,59 @@ input:focus { outline: none; border-color: var(--accent); }
 }
 .items-table th { color: var(--text-muted); font-size: 0.82rem; background: #fafafa; }
 .items-table td.actions-col { text-align: right; width: 140px; }
-.items-table tr:last-child td { border-bottom: none; }
 
-.btn-mini {
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  cursor: pointer;
-  border: none;
-}
-.btn-mini.del { background: #fee2e2; color: #991b1b; }
-.btn-mini.edit { background: #e0f2fe; color: #075985; margin-right: 4px; }
-
-.empty-state {
-  text-align: center;
-  padding: 36px 16px;
-  color: var(--text-muted);
-}
-.empty-state p { margin: 6px 0 0; }
-
-.footer-actions {
+/* CALENDARIO DE LIVES */
+.calendar-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 14px;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 14px;
 }
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.cal-head {
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding: 6px 0;
+}
+.cal-day {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  min-height: 90px;
+  padding: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+}
+.cal-day:hover { border-color: var(--accent); background: #f8fafc; }
+.cal-day.today { border: 2px solid var(--primary); background: #f0f7ff; }
+.cal-day.selected { outline: 3px solid var(--accent); }
+.cal-day.empty { background: transparent; border-color: transparent; cursor: default; }
+.cal-day-num { font-weight: 700; font-size: 0.85rem; margin-bottom: 4px; }
+.cal-live-badge {
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 6px;
+  padding: 2px 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-bottom: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cal-live-badge.has-total { background: #dcfce7; color: #166534; }
 
-/* MODAL DE EDICIÓN */
+/* MODALES */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -270,8 +308,8 @@ input:focus { outline: none; border-color: var(--accent); }
 @media (max-width: 700px) {
   .cards { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
-  .date-bar { flex-direction: column; align-items: stretch; }
-  .date-nav { justify-content: space-between; }
+  .cal-day { min-height: 65px; padding: 4px; }
+  .cal-live-badge { font-size: 0.65rem; }
 }
 </style>
 </head>
@@ -284,95 +322,171 @@ input:focus { outline: none; border-color: var(--accent); }
       <h1>🎙️ Asistente Jules</h1>
       <span id="speechBadge" class="status-badge off">Modo Jules: Apagado</span>
     </div>
-    <div class="header-subtitle">Planillas diarias con registro por voz: Nombre, Código y Precio. Di <b>“Oye Jules”</b> para empezar.</div>
+    <div class="header-subtitle">Planillas organizadas por <b>Lives</b> con calendario y registro por voz. Di <b>“Oye Jules”</b> para empezar.</div>
   </header>
 
-  <!-- BARRA DE FECHA DIARIA -->
-  <section class="date-bar">
-    <div class="date-nav">
-      <button class="btn btn-secondary btn-mini" id="prevDayBtn">◀ Día anterior</button>
-      <button class="btn btn-secondary btn-mini" id="todayBtn">Hoy</button>
-      <button class="btn btn-secondary btn-mini" id="nextDayBtn">Día siguiente ▶</button>
-    </div>
-    <div class="date-picker-wrap">
-      <label for="currentDateInput">📅 Planilla del día:</label>
-      <input type="date" id="currentDateInput">
-    </div>
-  </section>
-
-  <!-- TARJETAS DE TOTALES -->
-  <section class="cards">
-    <div class="card highlight">
-      <div class="label">Total general del día</div>
-      <div class="value" id="dayTotal">$0</div>
-    </div>
-    <div class="card">
-      <div class="label">Clientes / Personas</div>
-      <div class="value" id="dayPeopleCount">0</div>
-    </div>
-    <div class="card">
-      <div class="label">Total artículos registrados</div>
-      <div class="value" id="dayRecordsCount">0</div>
-    </div>
-  </section>
-
-  <!-- PANEL DE VOZ Y WAKE WORD ("OYE JULES") -->
-  <section class="panel">
-    <h2>🗣️ Control por Voz (“Oye Jules”)</h2>
-    <div class="voice-box" id="voiceBox">
-      <div class="voice-controls">
-        <button class="btn btn-primary" id="toggleWakeBtn">▶ Activar escucha continua</button>
-        <button class="btn btn-danger" id="cancelFlowBtn" style="display:none;">✕ Cancelar dictado</button>
-      </div>
-
-      <div class="conversation-step" id="conversationStep">
-        <div class="prompt-text" id="julesPrompt">Pulsa "Activar escucha continua" y di <b>“Oye Jules”</b> para agregar un registro.</div>
-        <div class="heard-text" id="julesHeard">Jules está en espera.</div>
-      </div>
-
-      <div class="chips">
-        <span class="chip">💡 <b>Paso a paso:</b> Di “Oye Jules” ➔ te pedirá Nombre ➔ Código ➔ Precio.</span>
-        <span class="chip">💡 <b>O todo junto:</b> “Oye Jules, registra a Camila código 12 diez mil pesos”.</span>
-        <span class="chip">💡 <b>Consultas:</b> “Oye Jules, ¿cuánto llevamos hoy?” o “¿cuánto lleva Camila?”.</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- AGREGAR MANUALMENTE -->
-  <section class="panel">
-    <h2>✍️ Agregar registro manualmente</h2>
-    <form class="form-grid" id="manualForm">
-      <input type="text" id="manualName" placeholder="Nombre cliente / persona" required>
-      <input type="text" id="manualCode" placeholder="Código (ej. P-01, 102)" required>
-      <input type="number" id="manualPrice" min="1" step="1" placeholder="Precio ($)" required>
-      <button type="submit" class="btn btn-primary">➕ Agregar</button>
-    </form>
-  </section>
-
-  <!-- PLANILLA DIARIA ORGANIZADA POR NOMBRES -->
-  <section class="panel">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-      <h2>📋 Planilla organizada por clientes (<span id="currentDateTitle">--</span>)</h2>
+  <!-- BARRA DE LIVE ACTIVO -->
+  <section class="active-live-bar">
+    <div class="live-indicator">
+      <div class="live-dot"></div>
       <div>
-        <button class="btn btn-secondary btn-mini" id="exportCsvBtn">⬇ Descargar CSV (Excel)</button>
-        <button class="btn btn-secondary btn-mini" id="exportBackupBtn">💾 Respaldo JSON</button>
-        <button class="btn btn-secondary btn-mini" id="importBackupBtn">📂 Cargar Respaldo</button>
-        <input type="file" id="backupFileInput" style="display:none;" accept=".json">
+        <span style="color:var(--text-muted); font-size:0.85rem; display:block;">Live Seleccionado:</span>
+        <span id="activeLiveTitle" style="color:var(--primary); font-size:1.15rem;">Cargando...</span>
       </div>
     </div>
-
-    <!-- CONTENEDOR DE GRUPOS POR PERSONA -->
-    <div id="groupedRecordsContainer"></div>
-
-    <div class="footer-actions">
-      <button class="btn btn-danger btn-mini" id="clearDayBtn">Vaciar planilla de este día</button>
-      <span style="font-size: 0.85rem; color: var(--text-muted);">Los cambios se guardan automáticamente en este dispositivo.</span>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <button class="btn btn-secondary btn-mini" id="switchLiveBtn">🔄 Cambiar / Elegir otro Live</button>
+      <button class="btn btn-primary btn-mini" id="newLiveQuickBtn">➕ Crear nuevo Live</button>
     </div>
   </section>
+
+  <!-- PESTAÑAS DE VISTA -->
+  <div class="view-tabs">
+    <button class="tab-btn active" id="tabPlanillaBtn">📋 Planilla del Live</button>
+    <button class="tab-btn" id="tabCalendarioBtn">📅 Calendario de Lives</button>
+  </div>
+
+  <!-- VISTA 1: PLANILLA DEL LIVE -->
+  <div id="viewPlanilla">
+    <!-- CARDS DE TOTALES DEL LIVE -->
+    <section class="cards">
+      <div class="card highlight">
+        <div class="label">Total recaudado en este Live</div>
+        <div class="value" id="liveTotal">$0</div>
+      </div>
+      <div class="card">
+        <div class="label">Clientes con compras</div>
+        <div class="value" id="livePeopleCount">0</div>
+      </div>
+      <div class="card">
+        <div class="label">Artículos vendidos</div>
+        <div class="value" id="liveRecordsCount">0</div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN DE VOZ Y WAKE WORD ("OYE JULES") -->
+    <section class="panel">
+      <h2>🗣️ Control por Voz (“Oye Jules”)</h2>
+      <div class="voice-box" id="voiceBox">
+        <div class="voice-controls">
+          <button class="btn btn-primary" id="toggleWakeBtn">▶ Activar escucha continua</button>
+          <button class="btn btn-danger" id="cancelFlowBtn" style="display:none;">✕ Cancelar dictado</button>
+        </div>
+
+        <div class="conversation-step" id="conversationStep">
+          <div class="prompt-text" id="julesPrompt">Pulsa "Activar escucha continua" y di <b>“Oye Jules”</b> para empezar a registrar.</div>
+          <div class="heard-text" id="julesHeard">Jules está en espera.</div>
+        </div>
+
+        <div class="chips">
+          <span class="chip">🔴 <b>Jules siempre preguntará el Live</b> si aún no hay uno seleccionado.</span>
+          <span class="chip">💡 <b>Flujo guiado:</b> “Oye Jules” ➔ te pedirá Live ➔ Nombre ➔ Código ➔ Precio.</span>
+          <span class="chip">💡 <b>Consultas:</b> “Oye Jules, ¿cuánto llevamos?” o “¿cuánto lleva María?”.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORMULARIO MANUAL -->
+    <section class="panel">
+      <h2>✍️ Agregar registro manualmente a este Live</h2>
+      <form class="form-grid" id="manualForm">
+        <input type="text" id="manualName" placeholder="Nombre de la persona" required>
+        <input type="text" id="manualCode" placeholder="Código (ej. P-01, 102)" required>
+        <input type="number" id="manualPrice" min="1" step="1" placeholder="Precio ($)" required>
+        <button type="submit" class="btn btn-primary">➕ Agregar</button>
+      </form>
+    </section>
+
+    <!-- TABLA DE CLIENTES Y SUBTOTALES -->
+    <section class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+        <h2>📋 Planilla organizada por clientes</h2>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-mini" id="exportCsvBtn">⬇ Descargar CSV (Excel)</button>
+          <button class="btn btn-secondary btn-mini" id="exportBackupBtn">💾 Respaldo</button>
+          <button class="btn btn-secondary btn-mini" id="importBackupBtn">📂 Cargar Respaldo</button>
+          <input type="file" id="backupFileInput" style="display:none;" accept=".json">
+        </div>
+      </div>
+
+      <div id="groupedRecordsContainer"></div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; flex-wrap:wrap; gap:10px;">
+        <button class="btn btn-danger btn-mini" id="clearLiveBtn">Vaciar registros de este Live</button>
+        <span style="font-size:0.85rem; color:var(--text-muted);">Los datos se guardan automáticamente en este dispositivo.</span>
+      </div>
+    </section>
+  </div>
+
+  <!-- VISTA 2: CALENDARIO DE LIVES -->
+  <div id="viewCalendario" style="display:none;">
+    <section class="panel">
+      <div class="calendar-controls">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn btn-secondary btn-mini" id="prevMonthBtn">◀ Mes anterior</button>
+          <h2 id="calendarMonthTitle" style="margin:0; font-size:1.25rem;">Noviembre 2026</h2>
+          <button class="btn btn-secondary btn-mini" id="nextMonthBtn">Mes siguiente ▶</button>
+        </div>
+        <button class="btn btn-primary" id="openNewLiveModalBtn">➕ Programar / Crear Live</button>
+      </div>
+
+      <!-- GRID DEL CALENDARIO -->
+      <div class="calendar-grid">
+        <div class="cal-head">Lun</div>
+        <div class="cal-head">Mar</div>
+        <div class="cal-head">Mié</div>
+        <div class="cal-head">Jue</div>
+        <div class="cal-head">Vie</div>
+        <div class="cal-head">Sáb</div>
+        <div class="cal-head">Dom</div>
+      </div>
+      <div class="calendar-grid" id="calendarDaysGrid" style="margin-top:6px;"></div>
+    </section>
+
+    <!-- DETALLE DEL DÍA SELECCIONADO EN EL CALENDARIO -->
+    <section class="panel">
+      <h2>📅 Lives del día: <span id="calSelectedDateText">--</span></h2>
+      <div id="dayLivesList"></div>
+    </section>
+  </div>
 
 </div>
 
-<!-- MODAL DE EDICIÓN -->
+<!-- MODAL CREAR NUEVO LIVE -->
+<div class="modal-backdrop" id="newLiveModal">
+  <div class="modal">
+    <h3>🎙️ Nuevo Live</h3>
+    <div class="modal-field">
+      <label for="liveDateInput">Fecha del Live:</label>
+      <input type="date" id="liveDateInput">
+    </div>
+    <div class="modal-field">
+      <label for="liveTitleInput">Nombre / Descripción del Live:</label>
+      <input type="text" id="liveTitleInput" placeholder="Ej. Live Tarde, Live Ropa, Remate Especial">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="cancelLiveModalBtn">Cancelar</button>
+      <button class="btn btn-primary" id="saveNewLiveBtn">Guardar y Abrir Live</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMBIAR LIVE -->
+<div class="modal-backdrop" id="switchLiveModal">
+  <div class="modal">
+    <h3>🔄 Seleccionar Live Activo</h3>
+    <div class="modal-field">
+      <label for="liveSelectDropdown">Elige un Live registrado:</label>
+      <select id="liveSelectDropdown" style="font-size:1rem; padding:8px;"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="cancelSwitchBtn">Cancelar</button>
+      <button class="btn btn-primary" id="confirmSwitchBtn">Seleccionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE EDICIÓN DE REGISTRO -->
 <div class="modal-backdrop" id="editModal">
   <div class="modal">
     <h3>✏️ Editar registro</h3>
@@ -397,60 +511,19 @@ input:focus { outline: none; border-color: var(--accent); }
 
 <script>
 /**
- * ASISTENTE JULES - GESTIÓN DE PLANILLAS DIARIAS
- * Persistencia en localStorage: { 'YYYY-MM-DD': [ { id, name, code, price, time }, ... ] }
+ * ASISTENTE JULES - GESTIÓN DE PLANILLAS POR LIVES Y CALENDARIO
  */
-
-const STORAGE_KEY = 'jules_planillas_db_v2';
+const STORAGE_KEY = 'jules_lives_db_v3';
+const PREV_KEY = 'jules_planillas_db_v2';
 const OLD_KEY = 'asistente_registros_v1';
 
-// Formato de moneda chilena
 const money = n => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
 
-// Obtener fecha local en formato YYYY-MM-DD
-function getLocalDateString(dateObj = new Date()) {
-  const d = new Date(dateObj);
+function getLocalDateString(d = new Date()) {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
-}
-
-// Cargar base de datos
-function loadDB() {
-  try {
-    let db = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    
-    // Migración de versión antigua si existiera
-    const oldRecords = localStorage.getItem(OLD_KEY);
-    if (oldRecords && Object.keys(db).length === 0) {
-      try {
-        const parsedOld = JSON.parse(oldRecords);
-        if (Array.isArray(parsedOld) && parsedOld.length > 0) {
-          const today = getLocalDateString();
-          db[today] = parsedOld.map(r => ({
-            id: r.id || generateId(),
-            name: capitalize(r.name || 'Sin nombre'),
-            code: 'General',
-            price: Number(r.amount) || 0,
-            time: r.date ? new Date(r.date).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) : '12:00'
-          }));
-        }
-      } catch (err) {}
-    }
-    return db;
-  } catch (e) {
-    return {};
-  }
-}
-
-let database = loadDB();
-let selectedDate = getLocalDateString();
-let editingRecordId = null;
-
-function saveDB() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(database));
-  render();
 }
 
 function generateId() {
@@ -466,64 +539,125 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }
 
-// Obtener registros del día seleccionado
-function getDayRecords(dateStr = selectedDate) {
-  return database[dateStr] || [];
+// ----------------- MODELO DE DATOS -----------------
+function loadDB() {
+  try {
+    let db = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (db && Array.isArray(db.lives)) return db;
+
+    // Migración de v2 si existe
+    const prev = JSON.parse(localStorage.getItem(PREV_KEY) || 'null');
+    if (prev && typeof prev === 'object') {
+      const lives = [];
+      Object.keys(prev).forEach(date => {
+        if (Array.isArray(prev[date]) && prev[date].length > 0) {
+          lives.push({
+            id: generateId(),
+            date: date,
+            title: `Live del ${date}`,
+            records: prev[date]
+          });
+        }
+      });
+      if (lives.length > 0) return { lives };
+    }
+
+    // Default inicial con el día de hoy
+    const today = getLocalDateString();
+    return {
+      lives: [
+        {
+          id: generateId(),
+          date: today,
+          title: 'Live Principal',
+          records: []
+        }
+      ]
+    };
+  } catch (e) {
+    return { lives: [] };
+  }
 }
 
-// ----------------- RENDERIZADO -----------------
+let db = loadDB();
+let activeLiveId = db.lives.length ? db.lives[0].id : null;
+let calCurrentYear = new Date().getFullYear();
+let calCurrentMonth = new Date().getMonth(); // 0 - 11
+let calSelectedDate = getLocalDateString();
+let editingRecordId = null;
 
-function render() {
-  $('currentDateInput').value = selectedDate;
-  
-  // Título legible de fecha
-  const parts = selectedDate.split('-');
-  const dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-  const dateFormatted = dateObj.toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  $('currentDateTitle').textContent = dateFormatted;
+function saveDB() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  renderAll();
+}
 
-  const records = getDayRecords(selectedDate);
+function getActiveLive() {
+  return db.lives.find(l => l.id === activeLiveId) || db.lives[0] || null;
+}
+
+// ----------------- RENDERIZADO GENERAL -----------------
+const $ = id => document.getElementById(id);
+
+function renderAll() {
+  const currentLive = getActiveLive();
+  if (currentLive) {
+    activeLiveId = currentLive.id;
+    $('activeLiveTitle').textContent = `“${currentLive.title}” (${currentLive.date})`;
+    renderPlanilla(currentLive);
+  } else {
+    $('activeLiveTitle').textContent = 'Ningún Live creado';
+    renderPlanilla(null);
+  }
+  renderCalendar();
+}
+
+function renderPlanilla(live) {
+  if (!live) {
+    $('liveTotal').textContent = '$0';
+    $('liveRecordsCount').textContent = '0';
+    $('livePeopleCount').textContent = '0';
+    $('groupedRecordsContainer').innerHTML = `<div style="text-align:center; padding:30px; color:#64748b;">No hay ningún Live seleccionado. Crea uno con el botón superior.</div>`;
+    return;
+  }
+
+  const records = live.records || [];
   const total = records.reduce((s, r) => s + (Number(r.price) || 0), 0);
-  
-  // Personas únicas
-  const uniqueNames = new Set(records.map(r => r.name.toLowerCase().trim()));
-  
-  $('dayTotal').textContent = money(total);
-  $('dayRecordsCount').textContent = records.length;
-  $('dayPeopleCount').textContent = uniqueNames.size;
+  const uniquePeople = new Set(records.map(r => r.name.toLowerCase().trim()));
 
-  // Agrupar registros por Nombre
+  $('liveTotal').textContent = money(total);
+  $('liveRecordsCount').textContent = records.length;
+  $('livePeopleCount').textContent = uniquePeople.size;
+
   const container = $('groupedRecordsContainer');
   if (records.length === 0) {
     container.innerHTML = `
-      <div class="empty-state">
-        <div style="font-size: 2.2rem;">📂</div>
-        <p><b>No hay registros en la planilla del ${selectedDate}.</b></p>
-        <p>Di <i>“Oye Jules”</i> para dictar o agrégalos manualmente arriba.</p>
+      <div style="text-align:center; padding:36px 16px; color:#64748b;">
+        <div style="font-size: 2.2rem;">🎙️</div>
+        <p><b>Aún no hay registros en este Live (${escapeHtml(live.title)}).</b></p>
+        <p>Di <i>“Oye Jules”</i> para que te pregunte a qué Live corresponde y empiece a registrar.</p>
       </div>`;
     return;
   }
 
-  // Agrupamiento
+  // Agrupamiento por cliente
   const groups = {};
   records.forEach(r => {
-    const key = r.name.trim();
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(r);
+    const k = r.name.trim();
+    if (!groups[k]) groups[k] = [];
+    groups[k].push(r);
   });
 
-  // Renderizar tarjetas por persona ordenadas alfabéticamente
   let html = '';
   const sortedNames = Object.keys(groups).sort((a, b) => a.localeCompare(b, 'es'));
 
-  sortedNames.forEach(personName => {
-    const list = groups[personName];
+  sortedNames.forEach(name => {
+    const list = groups[name];
     const subtotal = list.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-    
+
     html += `
     <div class="person-group">
       <div class="person-header">
-        <div class="name">👤 ${escapeHtml(personName)} <span style="font-size:0.85rem; font-weight:normal; color:#64748b;">(${list.length} ${list.length === 1 ? 'ítem' : 'ítems'})</span></div>
+        <div class="name">👤 ${escapeHtml(name)} <span style="font-size:0.85rem; font-weight:normal; color:#64748b;">(${list.length} ${list.length === 1 ? 'ítem' : 'ítems'})</span></div>
         <div class="subtotal">Subtotal: ${money(subtotal)}</div>
       </div>
       <table class="items-table">
@@ -542,8 +676,8 @@ function render() {
               <td>${money(item.price)}</td>
               <td style="color:#64748b; font-size:0.85rem;">${escapeHtml(item.time || '')}</td>
               <td class="actions-col">
-                <button class="btn-mini edit" onclick="openEditModal('${item.id}')">Editar</button>
-                <button class="btn-mini del" onclick="deleteRecord('${item.id}')">Borrar</button>
+                <button class="btn btn-secondary btn-mini" onclick="openEditModal('${item.id}')">Editar</button>
+                <button class="btn btn-danger btn-mini" onclick="deleteRecord('${item.id}')">Borrar</button>
               </td>
             </tr>
           `).join('')}
@@ -555,20 +689,203 @@ function render() {
   container.innerHTML = html;
 }
 
-const $ = id => document.getElementById(id);
+// ----------------- RENDERIZADO DEL CALENDARIO -----------------
+const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
-// ----------------- AGREGAR, EDITAR Y BORRAR REGISTROS -----------------
+function renderCalendar() {
+  $('calendarMonthTitle').textContent = `${MONTH_NAMES[calCurrentMonth]} ${calCurrentYear}`;
+  const grid = $('calendarDaysGrid');
+  grid.innerHTML = '';
 
-function addRecordToDate(dateStr, name, code, price) {
+  const firstDayIndex = (new Date(calCurrentYear, calCurrentMonth, 1).getDay() + 6) % 7; // Lunes = 0
+  const totalDays = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
+  const todayStr = getLocalDateString();
+
+  // Celdas vacías al inicio
+  for (let i = 0; i < firstDayIndex; i++) {
+    grid.innerHTML += `<div class="cal-day empty"></div>`;
+  }
+
+  for (let d = 1; d <= totalDays; d++) {
+    const dStr = `${calCurrentYear}-${String(calCurrentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const dayLives = db.lives.filter(l => l.date === dStr);
+    const isToday = dStr === todayStr;
+    const isSel = dStr === calSelectedDate;
+
+    let badges = '';
+    dayLives.forEach(l => {
+      const tot = (l.records || []).reduce((s, r) => s + (Number(r.price) || 0), 0);
+      badges += `<div class="cal-live-badge ${tot > 0 ? 'has-total' : ''}" title="${escapeHtml(l.title)}: ${money(tot)}">🔴 ${escapeHtml(l.title)}</div>`;
+    });
+
+    const dayEl = document.createElement('div');
+    dayEl.className = `cal-day ${isToday ? 'today' : ''} ${isSel ? 'selected' : ''}`;
+    dayEl.innerHTML = `
+      <div class="cal-day-num">${d}</div>
+      <div style="flex:1; overflow:hidden;">${badges}</div>
+    `;
+    dayEl.onclick = () => {
+      calSelectedDate = dStr;
+      renderCalendar();
+      renderDayLivesList(dStr);
+    };
+    grid.appendChild(dayEl);
+  }
+
+  renderDayLivesList(calSelectedDate);
+}
+
+function renderDayLivesList(dateStr) {
+  $('calSelectedDateText').textContent = dateStr;
+  const listEl = $('dayLivesList');
+  const dayLives = db.lives.filter(l => l.date === dateStr);
+
+  if (dayLives.length === 0) {
+    listEl.innerHTML = `
+      <div style="color:#64748b; padding:12px;">No hay Lives programados para esta fecha.
+      <button class="btn btn-primary btn-mini" style="margin-left:10px;" onclick="openNewLiveModalForDate('${dateStr}')">➕ Crear Live aquí</button>
+      </div>`;
+    return;
+  }
+
+  listEl.innerHTML = dayLives.map(l => {
+    const tot = (l.records || []).reduce((s, r) => s + (Number(r.price) || 0), 0);
+    const isCurrent = l.id === activeLiveId;
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; padding:12px 16px; border-radius:10px; margin-bottom:8px;">
+        <div>
+          <b style="font-size:1rem; color:var(--primary);">${escapeHtml(l.title)}</b>
+          <div style="font-size:0.85rem; color:#64748b;">${(l.records || []).length} ventas • Total: <b style="color:#047857;">${money(tot)}</b></div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          ${isCurrent ? '<span style="font-size:0.85rem; color:#15803d; font-weight:700; align-self:center;">✓ Activo</span>' : `<button class="btn btn-primary btn-mini" onclick="selectLiveAndSwitchTab('${l.id}')">Abrir Planilla</button>`}
+          <button class="btn btn-danger btn-mini" onclick="deleteLive('${l.id}')">Eliminar</button>
+        </div>
+      </div>
+    `;
+  }).join('') + `<button class="btn btn-secondary btn-mini" style="margin-top:6px;" onclick="openNewLiveModalForDate('${dateStr}')">➕ Agregar otro Live a este día</button>`;
+}
+
+function selectLiveAndSwitchTab(liveId) {
+  activeLiveId = liveId;
+  saveDB();
+  switchTab('planilla');
+}
+window.selectLiveAndSwitchTab = selectLiveAndSwitchTab;
+
+function deleteLive(liveId) {
+  const l = db.lives.find(x => x.id === liveId);
+  if (!l) return;
+  if (!confirm(`¿Eliminar el Live "${l.title}" y todos sus registros?`)) return;
+  db.lives = db.lives.filter(x => x.id !== liveId);
+  if (activeLiveId === liveId) {
+    activeLiveId = db.lives.length ? db.lives[0].id : null;
+  }
+  saveDB();
+}
+window.deleteLive = deleteLive;
+
+// ----------------- NAVEGACIÓN DE PESTAÑAS -----------------
+function switchTab(tab) {
+  if (tab === 'planilla') {
+    $('viewPlanilla').style.display = 'block';
+    $('viewCalendario').style.display = 'none';
+    $('tabPlanillaBtn').classList.add('active');
+    $('tabCalendarioBtn').classList.remove('active');
+  } else {
+    $('viewPlanilla').style.display = 'none';
+    $('viewCalendario').style.display = 'block';
+    $('tabPlanillaBtn').classList.remove('active');
+    $('tabCalendarioBtn').classList.add('active');
+    renderCalendar();
+  }
+}
+$('tabPlanillaBtn').onclick = () => switchTab('planilla');
+$('tabCalendarioBtn').onclick = () => switchTab('calendario');
+
+$('prevMonthBtn').onclick = () => {
+  if (calCurrentMonth === 0) { calCurrentMonth = 11; calCurrentYear--; }
+  else { calCurrentMonth--; }
+  renderCalendar();
+};
+$('nextMonthBtn').onclick = () => {
+  if (calCurrentMonth === 11) { calCurrentMonth = 0; calCurrentYear++; }
+  else { calCurrentMonth++; }
+  renderCalendar();
+};
+
+// ----------------- CREAR / CAMBIAR LIVES -----------------
+function openNewLiveModalForDate(dateStr) {
+  $('liveDateInput').value = dateStr || getLocalDateString();
+  $('liveTitleInput').value = '';
+  $('newLiveModal').style.display = 'flex';
+  $('liveTitleInput').focus();
+}
+window.openNewLiveModalForDate = openNewLiveModalForDate;
+
+$('newLiveQuickBtn').onclick = () => openNewLiveModalForDate(getLocalDateString());
+$('openNewLiveModalBtn').onclick = () => openNewLiveModalForDate(calSelectedDate);
+
+$('cancelLiveModalBtn').onclick = () => $('newLiveModal').style.display = 'none';
+
+$('saveNewLiveBtn').onclick = () => {
+  const date = $('liveDateInput').value || getLocalDateString();
+  let title = $('liveTitleInput').value.trim();
+  if (!title) title = `Live ${new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}`;
+
+  const newLive = {
+    id: generateId(),
+    date,
+    title: capitalize(title),
+    records: []
+  };
+
+  db.lives.push(newLive);
+  activeLiveId = newLive.id;
+  saveDB();
+  $('newLiveModal').style.display = 'none';
+  switchTab('planilla');
+  say(`Creado y seleccionado el Live: ${newLive.title}.`);
+};
+
+// Modal Cambiar Live
+$('switchLiveBtn').onclick = () => {
+  const select = $('liveSelectDropdown');
+  select.innerHTML = '';
+  if (db.lives.length === 0) {
+    openNewLiveModalForDate(getLocalDateString());
+    return;
+  }
+  db.lives.slice().reverse().forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l.id;
+    opt.textContent = `${l.date} - ${l.title} (${(l.records || []).length} ventas)`;
+    if (l.id === activeLiveId) opt.selected = true;
+    select.appendChild(opt);
+  });
+  $('switchLiveModal').style.display = 'flex';
+};
+
+$('cancelSwitchBtn').onclick = () => $('switchLiveModal').style.display = 'none';
+$('confirmSwitchBtn').onclick = () => {
+  activeLiveId = $('liveSelectDropdown').value;
+  saveDB();
+  $('switchLiveModal').style.display = 'none';
+};
+
+// ----------------- OPERACIONES EN REGISTROS -----------------
+function addRecordToLive(liveId, name, code, price) {
+  const live = db.lives.find(l => l.id === liveId);
+  if (!live) return false;
+
   name = capitalize(name);
   code = String(code || 'S/C').trim().toUpperCase();
   price = Math.round(Number(price));
 
   if (!name || !price || price <= 0) return false;
+  if (!live.records) live.records = [];
 
-  if (!database[dateStr]) database[dateStr] = [];
-
-  const newRec = {
+  const rec = {
     id: generateId(),
     name,
     code,
@@ -576,25 +893,27 @@ function addRecordToDate(dateStr, name, code, price) {
     time: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
   };
 
-  database[dateStr].push(newRec);
+  live.records.push(rec);
   saveDB();
-  return newRec;
+  return rec;
 }
 
-function deleteRecord(id) {
+function deleteRecord(recId) {
+  const live = getActiveLive();
+  if (!live) return;
   if (!confirm('¿Eliminar este registro de la planilla?')) return;
-  const records = getDayRecords(selectedDate);
-  database[selectedDate] = records.filter(r => r.id !== id);
+  live.records = (live.records || []).filter(r => r.id !== recId);
   saveDB();
 }
 window.deleteRecord = deleteRecord;
 
-function openEditModal(id) {
-  const records = getDayRecords(selectedDate);
-  const rec = records.find(r => r.id === id);
+function openEditModal(recId) {
+  const live = getActiveLive();
+  if (!live) return;
+  const rec = (live.records || []).find(r => r.id === recId);
   if (!rec) return;
 
-  editingRecordId = id;
+  editingRecordId = recId;
   $('editName').value = rec.name;
   $('editCode').value = rec.code;
   $('editPrice').value = rec.price;
@@ -608,9 +927,9 @@ $('cancelEditBtn').onclick = () => {
 };
 
 $('saveEditBtn').onclick = () => {
-  if (!editingRecordId) return;
-  const records = getDayRecords(selectedDate);
-  const rec = records.find(r => r.id === editingRecordId);
+  const live = getActiveLive();
+  if (!live || !editingRecordId) return;
+  const rec = (live.records || []).find(r => r.id === editingRecordId);
   if (!rec) return;
 
   const newName = capitalize($('editName').value);
@@ -618,7 +937,7 @@ $('saveEditBtn').onclick = () => {
   const newPrice = Math.round(Number($('editPrice').value));
 
   if (!newName || !newPrice || newPrice <= 0) {
-    alert('Ingresa un nombre y un precio válido.');
+    alert('Ingresa un nombre y precio válido.');
     return;
   }
 
@@ -630,64 +949,37 @@ $('saveEditBtn').onclick = () => {
   editingRecordId = null;
 };
 
+$('clearLiveBtn').onclick = () => {
+  const live = getActiveLive();
+  if (!live) return;
+  if (confirm(`¿Vaciar todos los registros del Live "${live.title}"?`)) {
+    live.records = [];
+    saveDB();
+    say('Planilla del Live vaciada.');
+  }
+};
+
 // Formulario manual
 $('manualForm').addEventListener('submit', e => {
   e.preventDefault();
+  const live = getActiveLive();
+  if (!live) {
+    alert('Por favor crea o selecciona un Live primero.');
+    return;
+  }
   const name = $('manualName').value;
   const code = $('manualCode').value;
   const price = $('manualPrice').value;
 
-  const added = addRecordToDate(selectedDate, name, code, price);
-  if (added) {
-    $('manualForm').reset();
-    $('manualName').focus();
-  }
+  addRecordToLive(live.id, name, code, price);
+  $('manualForm').reset();
+  $('manualName').focus();
 });
 
-// Navegación de fecha
-$('currentDateInput').addEventListener('change', e => {
-  if (e.target.value) {
-    selectedDate = e.target.value;
-    render();
-  }
-});
-
-$('todayBtn').onclick = () => {
-  selectedDate = getLocalDateString();
-  render();
-};
-
-$('prevDayBtn').onclick = () => {
-  const parts = selectedDate.split('-');
-  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-  d.setDate(d.getDate() - 1);
-  selectedDate = getLocalDateString(d);
-  render();
-};
-
-$('nextDayBtn').onclick = () => {
-  const parts = selectedDate.split('-');
-  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-  d.setDate(d.getDate() + 1);
-  selectedDate = getLocalDateString(d);
-  render();
-};
-
-$('clearDayBtn').onclick = () => {
-  if (confirm(`¿Vaciar todos los registros del día ${selectedDate}?`)) {
-    database[selectedDate] = [];
-    saveDB();
-    say('Planilla del día vaciada.');
-  }
-};
-
-// ----------------- PARSER NUMÉRICO ROBUSTO EN ESPAÑOL -----------------
-
+// ----------------- PARSER NUMÉRICO EN ESPAÑOL -----------------
 function parseNumber(s) {
   if (!s) return null;
   s = String(s).toLowerCase().replace(/[.$]/g, '').replace(/\bp(esos?)?\b/g, '').trim();
-
-  // Si ya viene como dígitos directos (ej. "5000", "15000")
   if (/^\d+([,.]\d+)?$/.test(s)) return Number(s.replace(',', '.'));
 
   const units = {
@@ -725,22 +1017,22 @@ function parseNumber(s) {
   return found ? (total + current) : null;
 }
 
-// ----------------- MOTOR DE VOZ & "OYE JULES" WAKE WORD -----------------
-
+// ----------------- MOTOR DE VOZ & WAKE WORD ("OYE JULES") -----------------
 let recognition = null;
 let wakeWordActive = false;
 let isSpeaking = false;
 
-// Estados del flujo de registro conversacional
+// Estados del flujo conversacional
 const STEP = {
   IDLE: 'IDLE',               // Esperando "Oye Jules"
+  AWAIT_LIVE: 'AWAIT_LIVE',   // JULES PREGUNTA: ¿A qué Live corresponde?
   AWAIT_NAME: 'AWAIT_NAME',   // Preguntando Nombre
   AWAIT_CODE: 'AWAIT_CODE',   // Preguntando Código
   AWAIT_PRICE: 'AWAIT_PRICE'  // Preguntando Precio
 };
 
 let currentStep = STEP.IDLE;
-let tempRecord = { name: '', code: '', price: 0 };
+let tempRecord = { liveId: null, liveTitle: '', name: '', code: '', price: 0 };
 
 function say(text, callback) {
   $('julesPrompt').innerHTML = text;
@@ -750,14 +1042,8 @@ function say(text, callback) {
     const u = new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g, ''));
     u.lang = 'es-CL';
     u.rate = 1.05;
-    u.onend = () => {
-      isSpeaking = false;
-      if (callback) callback();
-    };
-    u.onerror = () => {
-      isSpeaking = false;
-      if (callback) callback();
-    };
+    u.onend = () => { isSpeaking = false; if (callback) callback(); };
+    u.onerror = () => { isSpeaking = false; if (callback) callback(); };
     speechSynthesis.speak(u);
   } else {
     if (callback) callback();
@@ -792,97 +1078,139 @@ function updateVoiceUI() {
   }
 }
 
-function cancelVoiceFlow(speakCancel = true) {
+function cancelVoiceFlow() {
   currentStep = STEP.IDLE;
-  tempRecord = { name: '', code: '', price: 0 };
+  tempRecord = { liveId: null, liveTitle: '', name: '', code: '', price: 0 };
   updateVoiceUI();
-  if (speakCancel) {
-    say('Cancelado. Estoy en espera. Di “Oye Jules” cuando quieras registrar.');
-  }
+  say('Cancelado. Estoy en espera. Di “Oye Jules” cuando quieras registrar.');
 }
-$('cancelFlowBtn').onclick = () => cancelVoiceFlow(true);
+$('cancelFlowBtn').onclick = () => cancelVoiceFlow();
+
+// Buscar o crear Live por nombre
+function resolveOrCreateLiveByName(rawTitle) {
+  const today = getLocalDateString();
+  const clean = rawTitle.replace(/^(al|para|el|en\s+el)\s+/i, '').trim();
+  const lower = clean.toLowerCase();
+
+  // Buscar coincidencia exacta o parcial en el día de hoy o reciente
+  let found = db.lives.find(l => l.date === today && l.title.toLowerCase() === lower);
+  if (!found) {
+    found = db.lives.find(l => l.title.toLowerCase().includes(lower) || lower.includes(l.title.toLowerCase()));
+  }
+
+  if (found) {
+    activeLiveId = found.id;
+    saveDB();
+    return found;
+  }
+
+  // Si no existe, lo creamos para el día de hoy
+  const newL = {
+    id: generateId(),
+    date: today,
+    title: capitalize(clean),
+    records: []
+  };
+  db.lives.push(newL);
+  activeLiveId = newL.id;
+  saveDB();
+  return newL;
+}
 
 function handleSpeech(rawText) {
-  if (isSpeaking) return; // Evitar que se escuche a sí mismo mientras habla
+  if (isSpeaking) return;
   const heard = rawText.trim();
   $('julesHeard').textContent = `Escuché: “${heard}”`;
-
   const lower = heard.toLowerCase();
 
-  // Cancelar en cualquier momento por voz
+  // Cancelar en cualquier momento
   if (/\b(cancelar|olv[ií]dalo|parar|detener)\b/.test(lower)) {
-    cancelVoiceFlow(true);
+    cancelVoiceFlow();
     return;
   }
 
-  // Regex para detectar "Oye Jules" y variantes
   const wakeRegex = /\b(oye\s*jules?|oye\s*yul(es|s)?|hola\s*jules?|jules|julios?)\b/i;
   const hasWake = wakeRegex.test(lower);
 
-  // 1. SI ESTÁ EN ESPERA (IDLE)
+  // 1. ESTADO IDLE
   if (currentStep === STEP.IDLE) {
-    if (!hasWake) {
-      // No dijo "Oye Jules", ignorar ruido ambiente
-      return;
-    }
+    if (!hasWake) return;
 
-    // Remover la palabra de activación del texto
     let command = lower.replace(wakeRegex, '').trim();
 
-    // Consulta de totales
+    // Consulta de saldos del Live actual
     if (/(cu[aá]nto|total|acumulado|llevamos)/.test(command) && !/(c[oó]digo|precio|registra|anota)/.test(command)) {
-      const records = getDayRecords(selectedDate);
-      const total = records.reduce((s, r) => s + (Number(r.price) || 0), 0);
-      say(`Hoy llevamos ${money(total)} en ${records.length} registros en la planilla.`);
+      const live = getActiveLive();
+      if (!live) { say('No hay ningún Live seleccionado actualmente.'); return; }
+      const total = (live.records || []).reduce((s, r) => s + (Number(r.price) || 0), 0);
+      say(`En el ${live.title} llevamos ${money(total)} acumulados en ${(live.records || []).length} ventas.`);
       return;
     }
 
     // Consulta por persona: "¿Cuánto lleva María?"
     const personQuery = command.match(/(?:cu[aá]nto lleva|cu[aá]nto ha puesto|total de)\s+([a-záéíóúñ\s]+)/i);
     if (personQuery) {
-      const queryName = personQuery[1].replace(/[?¿!]/g, '').trim();
-      const records = getDayRecords(selectedDate);
-      const personRecs = records.filter(r => r.name.toLowerCase() === queryName.toLowerCase());
-      if (personRecs.length) {
-        const sub = personRecs.reduce((s, r) => s + r.price, 0);
-        say(`${queryName} tiene un total de ${money(sub)} en ${personRecs.length} artículos hoy.`);
-      } else {
-        say(`No encuentro registros para ${queryName} en la planilla de hoy.`);
+      const live = getActiveLive();
+      const qName = personQuery[1].replace(/[?¿!]/g, '').trim();
+      if (live) {
+        const pRecs = (live.records || []).filter(r => r.name.toLowerCase() === qName.toLowerCase());
+        if (pRecs.length) {
+          const sub = pRecs.reduce((s, r) => s + r.price, 0);
+          say(`${qName} lleva un total de ${money(sub)} en el ${live.title}.`);
+          return;
+        }
       }
+      say(`No encuentro registros para ${qName} en el Live actual.`);
       return;
     }
 
-    // ¿Dijo todo de corrido? Ej: "Oye Jules anota a María código A1 diez mil"
-    const oneShotMatch = command.match(/(?:anota|registra|agrega)?\s*(?:a\s+)?([a-záéíóúñ\s]+?)\s+c[oó]digo\s+([a-z0-9\-]+)\s+(?:precio|por|de)?\s*(.+)/i);
-    if (oneShotMatch) {
-      const parsedName = capitalize(oneShotMatch[1]);
-      const parsedCode = oneShotMatch[2].toUpperCase();
-      const parsedPrice = parseNumber(oneShotMatch[3]);
-
-      if (parsedName && parsedCode && parsedPrice && parsedPrice > 0) {
-        addRecordToDate(selectedDate, parsedName, parsedCode, parsedPrice);
-        const records = getDayRecords(selectedDate);
-        const personRecs = records.filter(r => r.name.toLowerCase() === parsedName.toLowerCase());
-        const sub = personRecs.reduce((s, r) => s + r.price, 0);
-        say(`Registrado: ${parsedName}, código ${parsedCode} por ${money(parsedPrice)}. Su total hoy es ${money(sub)}.`);
-        currentStep = STEP.IDLE;
-        updateVoiceUI();
-        return;
-      }
-    }
-
-    // Si solo dijo "Oye Jules" (o "Oye Jules anota"), iniciamos el flujo conversacional guiado
-    currentStep = STEP.AWAIT_NAME;
+    // ¡JULES PREGUNTA SIEMPRE POR EL LIVE!
+    // Iniciamos preguntando a qué Live corresponde la planilla
+    currentStep = STEP.AWAIT_LIVE;
     updateVoiceUI();
-    say('¡Hola! Dime el <b>nombre</b> de la persona.');
+
+    const currentLive = getActiveLive();
+    if (currentLive) {
+      say(`¡Hola! <b>¿A qué Live corresponde esta planilla?</b> (Actualmente está en “${currentLive.title}”, o dime el nombre del Live).`);
+    } else {
+      say('¡Hola! <b>¿A qué Live corresponde esta planilla?</b>');
+    }
     return;
   }
 
-  // 2. PASO 1: ESPERANDO NOMBRE
+  // 2. PASO 1: ESPERANDO EL LIVE
+  if (currentStep === STEP.AWAIT_LIVE) {
+    let cleanLiveName = heard.replace(/^(es|para|el|al|en\s+el)\s+/i, '').replace(/[.?,]/g, '').trim();
+    if (!cleanLiveName || cleanLiveName.length < 2) {
+      say('No entendí el nombre del Live. Por favor repítelo (por ejemplo: “Live Tarde” o “el mismo”).');
+      return;
+    }
+
+    let targetLive = null;
+    if (/(el\s+mismo|este|actual|continua|seguir)/i.test(cleanLiveName)) {
+      targetLive = getActiveLive();
+    } else {
+      targetLive = resolveOrCreateLiveByName(cleanLiveName);
+    }
+
+    if (!targetLive) {
+      targetLive = resolveOrCreateLiveByName('Live Principal');
+    }
+
+    tempRecord.liveId = targetLive.id;
+    tempRecord.liveTitle = targetLive.title;
+
+    currentStep = STEP.AWAIT_NAME;
+    updateVoiceUI();
+    say(`Anotando para <b>${targetLive.title}</b>. ¿Cuál es el <b>nombre</b> de la persona?`);
+    return;
+  }
+
+  // 3. PASO 2: ESPERANDO NOMBRE DE LA PERSONA
   if (currentStep === STEP.AWAIT_NAME) {
     let cleanName = heard.replace(/^(es|para|el\s+nombre\s+es|cliente|anota\s+a)\s+/i, '').replace(/[.?,]/g, '').trim();
     if (!cleanName || cleanName.length < 2) {
-      say('No alcancé a oír el nombre. Por favor, repite el nombre.');
+      say('No alcancé a oír el nombre. Por favor, repítelo.');
       return;
     }
     tempRecord.name = capitalize(cleanName);
@@ -892,7 +1220,7 @@ function handleSpeech(rawText) {
     return;
   }
 
-  // 3. PASO 2: ESPERANDO CÓDIGO
+  // 4. PASO 3: ESPERANDO CÓDIGO
   if (currentStep === STEP.AWAIT_CODE) {
     let cleanCode = heard.replace(/^(el\s+c[oó]digo\s+es|c[oó]digo)\s+/i, '').replace(/[.?,]/g, '').trim().toUpperCase();
     if (!cleanCode) {
@@ -906,7 +1234,7 @@ function handleSpeech(rawText) {
     return;
   }
 
-  // 4. PASO 3: ESPERANDO PRECIO
+  // 5. PASO 4: ESPERANDO PRECIO Y GUARDANDO
   if (currentStep === STEP.AWAIT_PRICE) {
     const price = parseNumber(heard);
     if (!price || price <= 0) {
@@ -915,18 +1243,18 @@ function handleSpeech(rawText) {
     }
 
     tempRecord.price = price;
-    addRecordToDate(selectedDate, tempRecord.name, tempRecord.code, tempRecord.price);
+    const targetLiveId = tempRecord.liveId || activeLiveId;
+    addRecordToLive(targetLiveId, tempRecord.name, tempRecord.code, tempRecord.price);
 
-    const records = getDayRecords(selectedDate);
-    const personRecs = records.filter(r => r.name.toLowerCase() === tempRecord.name.toLowerCase());
-    const subtotal = personRecs.reduce((s, r) => s + r.price, 0);
+    const live = db.lives.find(l => l.id === targetLiveId);
+    const pRecs = (live.records || []).filter(r => r.name.toLowerCase() === tempRecord.name.toLowerCase());
+    const subtotal = pRecs.reduce((s, r) => s + r.price, 0);
 
-    const finalMsg = `Listo. Registré para <b>${tempRecord.name}</b>, código <b>${tempRecord.code}</b> por <b>${money(tempRecord.price)}</b>. Su total hoy es <b>${money(subtotal)}</b>.`;
-    
+    const msg = `Listo. Registrado en <b>${live.title}</b> para <b>${tempRecord.name}</b>, código <b>${tempRecord.code}</b> por <b>${money(tempRecord.price)}</b>. Su total es <b>${money(subtotal)}</b>.`;
     currentStep = STEP.IDLE;
-    tempRecord = { name: '', code: '', price: 0 };
+    tempRecord = { liveId: null, liveTitle: '', name: '', code: '', price: 0 };
     updateVoiceUI();
-    say(finalMsg);
+    say(msg);
   }
 }
 
@@ -942,21 +1270,16 @@ function initSpeechRecognition() {
   recognition.continuous = true;
   recognition.interimResults = false;
 
-  recognition.onstart = () => {
-    updateVoiceUI();
-  };
-
+  recognition.onstart = () => updateVoiceUI();
   recognition.onresult = e => {
     for (let i = e.resultIndex; i < e.results.length; ++i) {
       if (e.results[i].isFinal) {
-        const transcript = e.results[i][0].transcript;
-        handleSpeech(transcript);
+        handleSpeech(e.results[i][0].transcript);
       }
     }
   };
 
   recognition.onerror = e => {
-    console.warn('Speech error:', e.error);
     if (e.error === 'not-allowed') {
       alert('Permiso de micrófono denegado. Habilita el micrófono en el navegador.');
       wakeWordActive = false;
@@ -965,11 +1288,8 @@ function initSpeechRecognition() {
   };
 
   recognition.onend = () => {
-    // Si la escucha continua sigue activa, reiniciar automáticamente (evita timeout de SpeechRecognition)
     if (wakeWordActive) {
-      try {
-        recognition.start();
-      } catch (err) {}
+      try { recognition.start(); } catch (err) {}
     } else {
       updateVoiceUI();
     }
@@ -983,83 +1303,74 @@ $('toggleWakeBtn').onclick = () => {
   wakeWordActive = !wakeWordActive;
 
   if (wakeWordActive) {
-    try {
-      recognition.start();
-    } catch (e) {}
+    try { recognition.start(); } catch (e) {}
     say('Asistente Jules activado. Estoy atento cuando digas: “Oye Jules”.');
   } else {
     currentStep = STEP.IDLE;
-    try {
-      recognition.stop();
-    } catch (e) {}
+    try { recognition.stop(); } catch (e) {}
     say('Asistente Jules desactivado.');
   }
   updateVoiceUI();
 };
 
-// ----------------- EXPORTACIÓN Y RESPALDO -----------------
-
-// Descargar CSV organizado para Excel
+// ----------------- EXPORTACIÓN CSV Y RESPALDOS -----------------
 $('exportCsvBtn').onclick = () => {
-  const records = getDayRecords(selectedDate);
-  if (!records.length) {
-    alert('No hay registros en la planilla de este día para exportar.');
+  const live = getActiveLive();
+  if (!live || !live.records || !live.records.length) {
+    alert('No hay registros en este Live para exportar.');
     return;
   }
 
-  // Agrupado por persona
   const groups = {};
-  records.forEach(r => {
+  live.records.forEach(r => {
     if (!groups[r.name]) groups[r.name] = [];
     groups[r.name].push(r);
   });
 
   const lines = [
-    ['Fecha', 'Cliente / Nombre', 'Código', 'Precio CLP', 'Hora'].join(';')
+    ['Fecha', 'Live', 'Cliente / Persona', 'Código', 'Precio CLP', 'Hora'].join(';')
   ];
 
   let grandTotal = 0;
   Object.keys(groups).sort().forEach(name => {
     const list = groups[name];
-    let personTotal = 0;
+    let sub = 0;
     list.forEach(item => {
-      personTotal += item.price;
+      sub += item.price;
       grandTotal += item.price;
       lines.push([
-        `"${selectedDate}"`,
+        `"${live.date}"`,
+        `"${live.title.replace(/"/g, '""')}"`,
         `"${item.name.replace(/"/g, '""')}"`,
         `"${item.code.replace(/"/g, '""')}"`,
         item.price,
         `"${item.time || ''}"`
       ].join(';'));
     });
-    // Fila de subtotal por persona
-    lines.push([`"${selectedDate}"`, `"SUBTOTAL ${name.toUpperCase()}"`, '""', personTotal, '""'].join(';'));
-    lines.push(';;;;'); // línea en blanco
+    lines.push([`"${live.date}"`, `"${live.title}"`, `"SUBTOTAL ${name.toUpperCase()}"`, '""', sub, '""'].join(';'));
+    lines.push(';;;;;;');
   });
 
-  lines.push([`"${selectedDate}"`, '"TOTAL GENERAL DEL DÍA"', '""', grandTotal, '""'].join(';'));
+  lines.push([`"${live.date}"`, `"${live.title}"`, '"TOTAL GENERAL DEL LIVE"', '""', grandTotal, '""'].join(';'));
 
   const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `Planilla_${selectedDate}.csv`;
+  a.download = `Planilla_${live.title.replace(/\s+/g, '_')}_${live.date}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
 };
 
-// Respaldo completo en JSON
 $('exportBackupBtn').onclick = () => {
-  const jsonStr = JSON.stringify(database, null, 2);
+  const jsonStr = JSON.stringify(db, null, 2);
   const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `Respaldo_Jules_${getLocalDateString()}.json`;
+  a.download = `Respaldo_Jules_Lives_${getLocalDateString()}.json`;
   a.click();
   URL.revokeObjectURL(a.href);
 };
 
-// Cargar respaldo JSON
 $('importBackupBtn').onclick = () => $('backupFileInput').click();
 
 $('backupFileInput').onchange = e => {
@@ -1068,15 +1379,16 @@ $('backupFileInput').onchange = e => {
   const reader = new FileReader();
   reader.onload = ev => {
     try {
-      const imported = JSON.parse(ev.target.result);
-      if (typeof imported === 'object' && imported !== null) {
-        if (confirm('¿Deseas reemplazar/combinar tu base de datos actual con este respaldo?')) {
-          database = { ...database, ...imported };
+      const imp = JSON.parse(ev.target.result);
+      if (imp && Array.isArray(imp.lives)) {
+        if (confirm('¿Deseas cargar este respaldo de Lives?')) {
+          db = imp;
+          activeLiveId = db.lives.length ? db.lives[0].id : null;
           saveDB();
           alert('¡Respaldo cargado con éxito!');
         }
       } else {
-        alert('El archivo no contiene un formato de respaldo válido.');
+        alert('Archivo de respaldo no válido.');
       }
     } catch (err) {
       alert('Error al leer el archivo JSON.');
@@ -1085,8 +1397,8 @@ $('backupFileInput').onchange = e => {
   reader.readAsText(file);
 };
 
-// Inicialización al cargar la página
-render();
+// Inicialización
+renderAll();
 updateVoiceUI();
 </script>
 </body>

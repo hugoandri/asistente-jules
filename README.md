@@ -1,38 +1,41 @@
-# 🎙️ Asistente Jules - Registro Diario por Voz
+# 🎙️ Asistente Jules - Planillas de Lives por Voz con Calendario
 
 > 🌐 **App en vivo (GitHub Pages):** [https://hugoandri.github.io/asistente-jules/](https://hugoandri.github.io/asistente-jules/)  
 > 📦 **Repositorio:** [https://github.com/hugoandri/asistente-jules](https://github.com/hugoandri/asistente-jules)
 
-Aplicación web ligera e interactiva para registrar movimientos de cobro y ventas organizados por clientes, códigos y precios mediante comandos de voz en español.
-
-Diseñado especialmente para facilitar el registro de pagos, ventas por catálogo, cuotas o pedidos diarios mediante comandos simples de voz como **"Oye Jules"**.
+Aplicación web interactiva para registrar ventas y cobros en **transmisiones en vivo (Lives)** organizados por clientes, códigos y precios mediante comandos de voz en español.
 
 ---
 
-## ✨ Características
+## ✨ Nuevas Características
 
-- 🗣️ **Activación por voz con "Oye Jules":**
-  - Reconocimiento continuo en segundo plano.
-  - Flujo conversacional guiado: pregunta **Nombre** ➔ **Código** ➔ **Precio**.
-  - Reconocimiento de frases continuas: *"Oye Jules anota a Camila código 12 diez mil pesos"*.
-  - Consultas de saldo: *"¿Cuánto llevamos hoy?"* o *"¿Cuánto lleva Camila?"*.
-- 📅 **Planillas diarias independientes:**
-  - Cada día genera automáticamente su propia planilla (`YYYY-MM-DD`).
-  - Navegador entre días anteriores, hoy y días siguientes con selector de fecha.
-- 👥 **Organización automática por clientes:**
-  - Agrupación por personas con cálculo automático de **subtotales por cliente**.
-  - Tarjetas de resumen con el **Total general del día**, cantidad de personas y total de artículos.
+- 📅 **Calendario visual de Lives:**
+  - Vista mensual interactiva donde cada día muestra sus Lives programados y el total recaudado.
+  - Permite programar o crear múltiples Lives por día (ej. *Live Mañana*, *Live Tarde*, *Remate Nocturno*).
+  - Cada Live tiene su propia planilla independiente con clientes, subtotales y total general.
+- 🗣️ **Jules pregunta el Live por voz:**
+  - Al decir **“Oye Jules”**, el asistente inmediatamente pregunta:
+    > *“¿A qué Live corresponde esta planilla?”*
+  - Respondes con el nombre del Live (ej. *“Live de la tarde”* o *“el mismo”*). Si no existe, Jules lo crea automáticamente para hoy.
+  - Luego te pide sucesivamente: **Nombre del cliente** ➔ **Código** ➔ **Precio**.
+  - Confirma por voz el monto y dice el subtotal acumulado del cliente en ese Live.
+- 👥 **Planilla agrupada por cliente:**
+  - Detalle por persona con todos sus artículos adquiridos, hora de compra y subtotal.
   - Opciones para editar o eliminar registros individuales.
 - 💾 **Persistencia local y respaldos:**
-  - Todos los datos se guardan en el navegador (`localStorage`).
-  - **Exportar a Excel (CSV):** con formato UTF-8 y separador `;` para visualización limpia en Excel.
-  - **Respaldo y restauración (JSON):** para migrar datos entre dispositivos.
-- 🌐 **Sin dependencias externas:** Funciona en cualquier navegador moderno (Google Chrome o Microsoft Edge recomendados) directamente desde la web o abriendo el archivo local.
+  - Guardado automático en `localStorage`.
+  - **Exportar a Excel (CSV):** reporte con subtotales por cliente y total general del Live.
+  - **Respaldos JSON:** descarga e importación completa.
 
 ---
 
 ## 🚀 Uso Rápido
 
-1. Entra directamente a [https://hugoandri.github.io/asistente-jules/](https://hugoandri.github.io/asistente-jules/) (o abre `index.html` localmente) en **Google Chrome** o **Microsoft Edge**.
-2. Presiona el botón **"▶ Activar escucha continua"** y permite el acceso al micrófono.
-3. Di en voz alta: **"Oye Jules"** y responde a las preguntas (Nombre, Código, Precio).
+1. Entra a [https://hugoandri.github.io/asistente-jules/](https://hugoandri.github.io/asistente-jules/) en **Google Chrome** o **Microsoft Edge**.
+2. Presiona **“▶ Activar escucha continua”** y concede el permiso de micrófono.
+3. Di en voz alta: **“Oye Jules”**.
+4. Responde a sus preguntas:
+   1. *¿A qué Live corresponde?* ➔ Ej: *"Live Tarde"*
+   2. *¿Cuál es el nombre?* ➔ Ej: *"María"*
+   3. *¿Cuál es el código?* ➔ Ej: *"A1"*
+   4. *¿Cuál es el precio?* ➔ Ej: *"cinco mil pesos"*
