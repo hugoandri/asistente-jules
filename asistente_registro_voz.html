@@ -116,21 +116,22 @@ h1 { margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px;
 
 /* SECCIÓN VOZ Y WAKE WORD */
 .voice-box {
-  background: #f8fafc;
-  border: 2px dashed #cbd5e1;
+  background: #eff6ff;
+  border: 2px solid #3b82f6;
   border-radius: 14px;
   padding: 18px;
   transition: all 0.2s ease;
-}
-.voice-box.listening {
-  border-color: #3b82f6;
-  background: #eff6ff;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
 }
 .voice-box.active-prompt {
   border-color: #16a34a;
   background: #f0fdf4;
-  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.18);
+}
+.voice-box.paused {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  box-shadow: none;
 }
 .voice-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
 .btn {
@@ -157,13 +158,30 @@ h1 { margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 6px 14px;
   border-radius: 20px;
-  font-size: 0.84rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+.status-badge.listening {
+  background: #dcfce7;
+  color: #15803d;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25);
 }
 .status-badge.off { background: #e2e8f0; color: #475569; }
-.status-badge.listening { background: #dcfce7; color: #15803d; }
+
+.mic-pulse-dot {
+  width: 10px;
+  height: 10px;
+  background: #16a34a;
+  border-radius: 50%;
+  animation: micPulse 1.4s infinite;
+}
+@keyframes micPulse {
+  0% { transform: scale(0.9); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.6; }
+  100% { transform: scale(0.9); opacity: 1; }
+}
 
 .conversation-step {
   padding: 14px;
@@ -172,8 +190,8 @@ h1 { margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px;
   border: 1px solid #e2e8f0;
   margin-top: 10px;
 }
-.conversation-step .prompt-text { font-weight: 700; color: #1e3a8a; font-size: 1.05rem; }
-.conversation-step .heard-text { font-size: 0.9rem; color: #64748b; margin-top: 6px; }
+.conversation-step .prompt-text { font-weight: 700; color: #1e3a8a; font-size: 1.08rem; }
+.conversation-step .heard-text { font-size: 0.92rem; color: #64748b; margin-top: 6px; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
 .chip {
   background: white;
@@ -320,9 +338,12 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
   <header>
     <div class="header-top">
       <h1>🎙️ Asistente Jules</h1>
-      <span id="speechBadge" class="status-badge off">Modo Jules: Apagado</span>
+      <span id="speechBadge" class="status-badge listening">
+        <span class="mic-pulse-dot"></span>
+        <span id="speechBadgeText">Micrófono siempre activo</span>
+      </span>
     </div>
-    <div class="header-subtitle">Planillas organizadas por <b>Lives</b> con calendario y registro por voz. Di <b>“Oye Jules”</b> para empezar.</div>
+    <div class="header-subtitle">Activación automática: solo di en voz alta <b>“Oye Jules”</b> para empezar a registrar.</div>
   </header>
 
   <!-- BARRA DE LIVE ACTIVO -->
@@ -366,22 +387,24 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 
     <!-- SECCIÓN DE VOZ Y WAKE WORD ("OYE JULES") -->
     <section class="panel">
-      <h2>🗣️ Control por Voz (“Oye Jules”)</h2>
+      <h2>🗣️ Control por Voz (Activación directa: “Oye Jules”)</h2>
       <div class="voice-box" id="voiceBox">
         <div class="voice-controls">
-          <button class="btn btn-primary" id="toggleWakeBtn">▶ Activar escucha continua</button>
-          <button class="btn btn-danger" id="cancelFlowBtn" style="display:none;">✕ Cancelar dictado</button>
+          <button class="btn btn-secondary btn-mini" id="toggleMuteBtn">🔇 Pausar micrófono</button>
+          <button class="btn btn-danger btn-mini" id="cancelFlowBtn" style="display:none;">✕ Cancelar dictado</button>
+          <span id="micHelperText" style="font-size:0.85rem; color:#1e40af; font-weight:600;">✓ El micrófono está encendido escuchando “Oye Jules”.</span>
         </div>
 
         <div class="conversation-step" id="conversationStep">
-          <div class="prompt-text" id="julesPrompt">Pulsa "Activar escucha continua" y di <b>“Oye Jules”</b> para empezar a registrar.</div>
-          <div class="heard-text" id="julesHeard">Jules está en espera.</div>
+          <div class="prompt-text" id="julesPrompt">Di en voz alta <b>“Oye Jules”</b> para agregar un registro.</div>
+          <div class="heard-text" id="julesHeard">Jules está escuchando el ambiente...</div>
         </div>
 
         <div class="chips">
-          <span class="chip">🔴 <b>Jules siempre preguntará el Live</b> si aún no hay uno seleccionado.</span>
-          <span class="chip">💡 <b>Flujo guiado:</b> “Oye Jules” ➔ te pedirá Live ➔ Nombre ➔ Código ➔ Precio.</span>
-          <span class="chip">💡 <b>Consultas:</b> “Oye Jules, ¿cuánto llevamos?” o “¿cuánto lleva María?”.</span>
+          <span class="chip">🗣️ <b>100% en español:</b> Jules te responderá y preguntará en español latinoamericano.</span>
+          <span class="chip">🔴 <b>Jules siempre preguntará el Live:</b> <i>“¿A qué Live corresponde esta planilla?”</i></span>
+          <span class="chip">💡 <b>Flujo guiado:</b> Live ➔ Nombre del cliente ➔ Código ➔ Precio.</span>
+          <span class="chip">💡 <b>Consultas de saldo:</b> “Oye Jules, ¿cuánto llevamos?” o “¿cuánto lleva Camila?”.</span>
         </div>
       </div>
     </section>
@@ -512,10 +535,10 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 <script>
 /**
  * ASISTENTE JULES - GESTIÓN DE PLANILLAS POR LIVES Y CALENDARIO
+ * 100% en español con activación continua por "Oye Jules".
  */
 const STORAGE_KEY = 'jules_lives_db_v3';
 const PREV_KEY = 'jules_planillas_db_v2';
-const OLD_KEY = 'asistente_registros_v1';
 
 const money = n => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
 
@@ -543,9 +566,8 @@ function escapeHtml(s) {
 function loadDB() {
   try {
     let db = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-    if (db && Array.isArray(db.lives)) return db;
+    if (db && Array.isArray(db.lives) && db.lives.length > 0) return db;
 
-    // Migración de v2 si existe
     const prev = JSON.parse(localStorage.getItem(PREV_KEY) || 'null');
     if (prev && typeof prev === 'object') {
       const lives = [];
@@ -562,7 +584,6 @@ function loadDB() {
       if (lives.length > 0) return { lives };
     }
 
-    // Default inicial con el día de hoy
     const today = getLocalDateString();
     return {
       lives: [
@@ -582,7 +603,7 @@ function loadDB() {
 let db = loadDB();
 let activeLiveId = db.lives.length ? db.lives[0].id : null;
 let calCurrentYear = new Date().getFullYear();
-let calCurrentMonth = new Date().getMonth(); // 0 - 11
+let calCurrentMonth = new Date().getMonth();
 let calSelectedDate = getLocalDateString();
 let editingRecordId = null;
 
@@ -595,9 +616,9 @@ function getActiveLive() {
   return db.lives.find(l => l.id === activeLiveId) || db.lives[0] || null;
 }
 
-// ----------------- RENDERIZADO GENERAL -----------------
 const $ = id => document.getElementById(id);
 
+// ----------------- RENDERIZADO -----------------
 function renderAll() {
   const currentLive = getActiveLive();
   if (currentLive) {
@@ -616,7 +637,7 @@ function renderPlanilla(live) {
     $('liveTotal').textContent = '$0';
     $('liveRecordsCount').textContent = '0';
     $('livePeopleCount').textContent = '0';
-    $('groupedRecordsContainer').innerHTML = `<div style="text-align:center; padding:30px; color:#64748b;">No hay ningún Live seleccionado. Crea uno con el botón superior.</div>`;
+    $('groupedRecordsContainer').innerHTML = `<div style="text-align:center; padding:30px; color:#64748b;">No hay ningún Live seleccionado.</div>`;
     return;
   }
 
@@ -634,12 +655,11 @@ function renderPlanilla(live) {
       <div style="text-align:center; padding:36px 16px; color:#64748b;">
         <div style="font-size: 2.2rem;">🎙️</div>
         <p><b>Aún no hay registros en este Live (${escapeHtml(live.title)}).</b></p>
-        <p>Di <i>“Oye Jules”</i> para que te pregunte a qué Live corresponde y empiece a registrar.</p>
+        <p>Di <i>“Oye Jules”</i> en cualquier momento para agregar registros.</p>
       </div>`;
     return;
   }
 
-  // Agrupamiento por cliente
   const groups = {};
   records.forEach(r => {
     const k = r.name.trim();
@@ -689,7 +709,7 @@ function renderPlanilla(live) {
   container.innerHTML = html;
 }
 
-// ----------------- RENDERIZADO DEL CALENDARIO -----------------
+// ----------------- CALENDARIO DE LIVES -----------------
 const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
 function renderCalendar() {
@@ -697,11 +717,10 @@ function renderCalendar() {
   const grid = $('calendarDaysGrid');
   grid.innerHTML = '';
 
-  const firstDayIndex = (new Date(calCurrentYear, calCurrentMonth, 1).getDay() + 6) % 7; // Lunes = 0
+  const firstDayIndex = (new Date(calCurrentYear, calCurrentMonth, 1).getDay() + 6) % 7;
   const totalDays = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
   const todayStr = getLocalDateString();
 
-  // Celdas vacías al inicio
   for (let i = 0; i < firstDayIndex; i++) {
     grid.innerHTML += `<div class="cal-day empty"></div>`;
   }
@@ -785,7 +804,6 @@ function deleteLive(liveId) {
 }
 window.deleteLive = deleteLive;
 
-// ----------------- NAVEGACIÓN DE PESTAÑAS -----------------
 function switchTab(tab) {
   if (tab === 'planilla') {
     $('viewPlanilla').style.display = 'block';
@@ -848,7 +866,6 @@ $('saveNewLiveBtn').onclick = () => {
   say(`Creado y seleccionado el Live: ${newLive.title}.`);
 };
 
-// Modal Cambiar Live
 $('switchLiveBtn').onclick = () => {
   const select = $('liveSelectDropdown');
   select.innerHTML = '';
@@ -873,7 +890,7 @@ $('confirmSwitchBtn').onclick = () => {
   $('switchLiveModal').style.display = 'none';
 };
 
-// ----------------- OPERACIONES EN REGISTROS -----------------
+// ----------------- REGISTROS MANUALES Y EDICIÓN -----------------
 function addRecordToLive(liveId, name, code, price) {
   const live = db.lives.find(l => l.id === liveId);
   if (!live) return false;
@@ -959,7 +976,6 @@ $('clearLiveBtn').onclick = () => {
   }
 };
 
-// Formulario manual
 $('manualForm').addEventListener('submit', e => {
   e.preventDefault();
   const live = getActiveLive();
@@ -1017,18 +1033,40 @@ function parseNumber(s) {
   return found ? (total + current) : null;
 }
 
-// ----------------- MOTOR DE VOZ & WAKE WORD ("OYE JULES") -----------------
-let recognition = null;
-let wakeWordActive = false;
-let isSpeaking = false;
+// ----------------- MOTOR DE VOZ: SELECCIÓN EXCLUSIVA EN ESPAÑOL -----------------
+let spanishVoice = null;
 
-// Estados del flujo conversacional
+function loadSpanishVoice() {
+  if (!('speechSynthesis' in window)) return;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return;
+
+  // Filtrar exclusivamente voces en español
+  // 1. Preferir español de Chile (es-CL) o Latinoamérica (es-MX, es-AR, es-CO, etc.)
+  // 2. O cualquier voz con código 'es-'
+  spanishVoice = voices.find(v => v.lang === 'es-CL') ||
+                 voices.find(v => v.lang.startsWith('es-') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Sabina') || v.name.includes('Elena') || v.name.includes('Dalia') || v.name.includes('Mia') || v.name.includes('Paulina'))) ||
+                 voices.find(v => v.lang.toLowerCase().startsWith('es-')) ||
+                 voices.find(v => v.lang.toLowerCase().startsWith('es'));
+}
+
+if ('speechSynthesis' in window) {
+  loadSpanishVoice();
+  window.speechSynthesis.onvoiceschanged = loadSpanishVoice;
+}
+
+// ----------------- SÍNTESIS DE VOZ Y CONVERSACIÓN -----------------
+let recognition = null;
+let micActive = true;     // Micrófono SIEMPRE ACTIVO por defecto
+let isSpeaking = false;
+let isListening = false;
+
 const STEP = {
-  IDLE: 'IDLE',               // Esperando "Oye Jules"
-  AWAIT_LIVE: 'AWAIT_LIVE',   // JULES PREGUNTA: ¿A qué Live corresponde?
-  AWAIT_NAME: 'AWAIT_NAME',   // Preguntando Nombre
-  AWAIT_CODE: 'AWAIT_CODE',   // Preguntando Código
-  AWAIT_PRICE: 'AWAIT_PRICE'  // Preguntando Precio
+  IDLE: 'IDLE',
+  AWAIT_LIVE: 'AWAIT_LIVE',
+  AWAIT_NAME: 'AWAIT_NAME',
+  AWAIT_CODE: 'AWAIT_CODE',
+  AWAIT_PRICE: 'AWAIT_PRICE'
 };
 
 let currentStep = STEP.IDLE;
@@ -1039,11 +1077,31 @@ function say(text, callback) {
   if ('speechSynthesis' in window) {
     isSpeaking = true;
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g, ''));
-    u.lang = 'es-CL';
-    u.rate = 1.05;
-    u.onend = () => { isSpeaking = false; if (callback) callback(); };
-    u.onerror = () => { isSpeaking = false; if (callback) callback(); };
+    if (!spanishVoice) loadSpanishVoice();
+
+    const clean = text.replace(/<[^>]*>/g, '');
+    const u = new SpeechSynthesisUtterance(clean);
+
+    if (spanishVoice) {
+      u.voice = spanishVoice;
+      u.lang = spanishVoice.lang;
+    } else {
+      u.lang = 'es-CL';
+    }
+
+    u.rate = 1.0;
+    u.pitch = 1.0;
+
+    const resumeListening = () => {
+      isSpeaking = false;
+      if (callback) callback();
+      if (micActive && recognition) {
+        try { recognition.start(); } catch (e) {}
+      }
+    };
+
+    u.onend = resumeListening;
+    u.onerror = resumeListening;
     speechSynthesis.speak(u);
   } else {
     if (callback) callback();
@@ -1053,27 +1111,36 @@ function say(text, callback) {
 function updateVoiceUI() {
   const box = $('voiceBox');
   const badge = $('speechBadge');
+  const badgeText = $('speechBadgeText');
   const cancelBtn = $('cancelFlowBtn');
+  const toggleBtn = $('toggleMuteBtn');
+  const helper = $('micHelperText');
 
-  if (!wakeWordActive) {
+  if (!micActive) {
     badge.className = 'status-badge off';
-    badge.textContent = 'Modo Jules: Apagado';
-    $('toggleWakeBtn').textContent = '▶ Activar escucha continua';
-    $('toggleWakeBtn').className = 'btn btn-primary';
-    box.className = 'voice-box';
+    badgeText.textContent = 'Micrófono pausado';
+    toggleBtn.textContent = '▶ Reanudar micrófono';
+    toggleBtn.className = 'btn btn-primary btn-mini';
+    box.className = 'voice-box paused';
     cancelBtn.style.display = 'none';
+    helper.textContent = 'El micrófono está apagado. Pulsa reanudar para volver a escuchar.';
+    helper.style.color = '#64748b';
   } else {
     badge.className = 'status-badge listening';
-    badge.textContent = '🎙️ Escuchando “Oye Jules”';
-    $('toggleWakeBtn').textContent = '⏹ Detener escucha continua';
-    $('toggleWakeBtn').className = 'btn btn-secondary';
+    badgeText.textContent = 'Micrófono siempre activo';
+    toggleBtn.textContent = '🔇 Pausar micrófono';
+    toggleBtn.className = 'btn btn-secondary btn-mini';
 
     if (currentStep !== STEP.IDLE) {
       box.className = 'voice-box active-prompt';
       cancelBtn.style.display = 'inline-flex';
+      helper.textContent = '🔴 En conversación con Jules... respondiendo a las preguntas.';
+      helper.style.color = '#15803d';
     } else {
-      box.className = 'voice-box listening';
+      box.className = 'voice-box';
       cancelBtn.style.display = 'none';
+      helper.textContent = '✓ Escuchando de fondo. Di en voz alta “Oye Jules” para empezar.';
+      helper.style.color = '#1e40af';
     }
   }
 }
@@ -1086,13 +1153,26 @@ function cancelVoiceFlow() {
 }
 $('cancelFlowBtn').onclick = () => cancelVoiceFlow();
 
-// Buscar o crear Live por nombre
+$('toggleMuteBtn').onclick = () => {
+  micActive = !micActive;
+  if (!micActive) {
+    currentStep = STEP.IDLE;
+    if (recognition) {
+      try { recognition.stop(); } catch (e) {}
+    }
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+  } else {
+    startListeningEngine();
+    say('Micrófono activado. Di “Oye Jules”.');
+  }
+  updateVoiceUI();
+};
+
 function resolveOrCreateLiveByName(rawTitle) {
   const today = getLocalDateString();
   const clean = rawTitle.replace(/^(al|para|el|en\s+el)\s+/i, '').trim();
   const lower = clean.toLowerCase();
 
-  // Buscar coincidencia exacta o parcial en el día de hoy o reciente
   let found = db.lives.find(l => l.date === today && l.title.toLowerCase() === lower);
   if (!found) {
     found = db.lives.find(l => l.title.toLowerCase().includes(lower) || lower.includes(l.title.toLowerCase()));
@@ -1104,7 +1184,6 @@ function resolveOrCreateLiveByName(rawTitle) {
     return found;
   }
 
-  // Si no existe, lo creamos para el día de hoy
   const newL = {
     id: generateId(),
     date: today,
@@ -1123,31 +1202,32 @@ function handleSpeech(rawText) {
   $('julesHeard').textContent = `Escuché: “${heard}”`;
   const lower = heard.toLowerCase();
 
-  // Cancelar en cualquier momento
+  // Cancelar
   if (/\b(cancelar|olv[ií]dalo|parar|detener)\b/.test(lower)) {
     cancelVoiceFlow();
     return;
   }
 
-  const wakeRegex = /\b(oye\s*jules?|oye\s*yul(es|s)?|hola\s*jules?|jules|julios?)\b/i;
+  // DETECCIÓN AMPLIA Y FONÉTICA DE "OYE JULES"
+  const wakeRegex = /\b(oye\s*(jules|yuls|yules|yul|yuli|jule|chuls|julios|julius)|hola\s*(jules|yuls|yules)|(jules|yuls|yules))\b/i;
   const hasWake = wakeRegex.test(lower);
 
-  // 1. ESTADO IDLE
+  // 1. ESTADO IDLE (esperando "Oye Jules")
   if (currentStep === STEP.IDLE) {
-    if (!hasWake) return;
+    if (!hasWake) return; // Ignorar ruidos o charlas que no contengan la palabra de activación
 
     let command = lower.replace(wakeRegex, '').trim();
 
-    // Consulta de saldos del Live actual
+    // Consulta de saldos acumulados
     if (/(cu[aá]nto|total|acumulado|llevamos)/.test(command) && !/(c[oó]digo|precio|registra|anota)/.test(command)) {
       const live = getActiveLive();
       if (!live) { say('No hay ningún Live seleccionado actualmente.'); return; }
       const total = (live.records || []).reduce((s, r) => s + (Number(r.price) || 0), 0);
-      say(`En el ${live.title} llevamos ${money(total)} acumulados en ${(live.records || []).length} ventas.`);
+      say(`En el ${live.title} llevamos ${money(total)} en ${(live.records || []).length} ventas.`);
       return;
     }
 
-    // Consulta por persona: "¿Cuánto lleva María?"
+    // Consulta por persona
     const personQuery = command.match(/(?:cu[aá]nto lleva|cu[aá]nto ha puesto|total de)\s+([a-záéíóúñ\s]+)/i);
     if (personQuery) {
       const live = getActiveLive();
@@ -1164,14 +1244,13 @@ function handleSpeech(rawText) {
       return;
     }
 
-    // ¡JULES PREGUNTA SIEMPRE POR EL LIVE!
-    // Iniciamos preguntando a qué Live corresponde la planilla
+    // SIEMPRE PREGUNTA EL LIVE
     currentStep = STEP.AWAIT_LIVE;
     updateVoiceUI();
 
     const currentLive = getActiveLive();
     if (currentLive) {
-      say(`¡Hola! <b>¿A qué Live corresponde esta planilla?</b> (Actualmente está en “${currentLive.title}”, o dime el nombre del Live).`);
+      say(`¡Hola! <b>¿A qué Live corresponde esta planilla?</b> (Puedes decir “el mismo” para ${currentLive.title}, o decir el nombre de otro Live).`);
     } else {
       say('¡Hola! <b>¿A qué Live corresponde esta planilla?</b>');
     }
@@ -1182,12 +1261,12 @@ function handleSpeech(rawText) {
   if (currentStep === STEP.AWAIT_LIVE) {
     let cleanLiveName = heard.replace(/^(es|para|el|al|en\s+el)\s+/i, '').replace(/[.?,]/g, '').trim();
     if (!cleanLiveName || cleanLiveName.length < 2) {
-      say('No entendí el nombre del Live. Por favor repítelo (por ejemplo: “Live Tarde” o “el mismo”).');
+      say('No alcancé a oír el nombre del Live. Por favor repítelo (por ejemplo: “Live Tarde” o “el mismo”).');
       return;
     }
 
     let targetLive = null;
-    if (/(el\s+mismo|este|actual|continua|seguir)/i.test(cleanLiveName)) {
+    if (/(el\s+mismo|este|actual|continua|seguir|si)/i.test(cleanLiveName)) {
       targetLive = getActiveLive();
     } else {
       targetLive = resolveOrCreateLiveByName(cleanLiveName);
@@ -1206,11 +1285,11 @@ function handleSpeech(rawText) {
     return;
   }
 
-  // 3. PASO 2: ESPERANDO NOMBRE DE LA PERSONA
+  // 3. PASO 2: ESPERANDO NOMBRE
   if (currentStep === STEP.AWAIT_NAME) {
     let cleanName = heard.replace(/^(es|para|el\s+nombre\s+es|cliente|anota\s+a)\s+/i, '').replace(/[.?,]/g, '').trim();
     if (!cleanName || cleanName.length < 2) {
-      say('No alcancé a oír el nombre. Por favor, repítelo.');
+      say('No entendí el nombre. Por favor repite el nombre de la persona.');
       return;
     }
     tempRecord.name = capitalize(cleanName);
@@ -1258,10 +1337,12 @@ function handleSpeech(rawText) {
   }
 }
 
+// ----------------- INICIALIZACIÓN AUTOMÁTICA DEL RECONOCEDOR -----------------
 function initSpeechRecognition() {
+  if (recognition) return;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
-    alert('Tu navegador no admite reconocimiento de voz nativo. Por favor usa Google Chrome o Microsoft Edge.');
+    $('julesPrompt').innerHTML = '⚠️ Tu navegador no admite reconocimiento de voz. Usa Google Chrome o Microsoft Edge.';
     return;
   }
 
@@ -1270,7 +1351,11 @@ function initSpeechRecognition() {
   recognition.continuous = true;
   recognition.interimResults = false;
 
-  recognition.onstart = () => updateVoiceUI();
+  recognition.onstart = () => {
+    isListening = true;
+    updateVoiceUI();
+  };
+
   recognition.onresult = e => {
     for (let i = e.resultIndex; i < e.results.length; ++i) {
       if (e.results[i].isFinal) {
@@ -1280,38 +1365,47 @@ function initSpeechRecognition() {
   };
 
   recognition.onerror = e => {
+    isListening = false;
     if (e.error === 'not-allowed') {
-      alert('Permiso de micrófono denegado. Habilita el micrófono en el navegador.');
-      wakeWordActive = false;
+      $('julesPrompt').innerHTML = '⚠️ Micrófono bloqueado. Habilita el permiso de micrófono en la barra de direcciones.';
+      micActive = false;
       updateVoiceUI();
     }
   };
 
   recognition.onend = () => {
-    if (wakeWordActive) {
-      try { recognition.start(); } catch (err) {}
-    } else {
-      updateVoiceUI();
+    isListening = false;
+    // Si debe seguir escuchando y Jules no está hablando, reiniciar de inmediato
+    if (micActive && !isSpeaking) {
+      setTimeout(() => {
+        try { recognition.start(); } catch (err) {}
+      }, 100);
     }
   };
 }
 
-$('toggleWakeBtn').onclick = () => {
-  if (!recognition) initSpeechRecognition();
-  if (!recognition) return;
-
-  wakeWordActive = !wakeWordActive;
-
-  if (wakeWordActive) {
-    try { recognition.start(); } catch (e) {}
-    say('Asistente Jules activado. Estoy atento cuando digas: “Oye Jules”.');
-  } else {
-    currentStep = STEP.IDLE;
-    try { recognition.stop(); } catch (e) {}
-    say('Asistente Jules desactivado.');
+function startListeningEngine() {
+  initSpeechRecognition();
+  if (recognition && !isListening) {
+    try {
+      recognition.start();
+    } catch (e) {}
   }
-  updateVoiceUI();
-};
+}
+
+// Iniciar automáticamente al cargar la página
+window.addEventListener('load', () => {
+  startListeningEngine();
+  loadSpanishVoice();
+});
+
+// Desbloqueo garantizado de audio/micrófono con el primer toque en pantalla
+document.addEventListener('click', () => {
+  if (micActive && !isListening && recognition) {
+    startListeningEngine();
+  }
+  if (!spanishVoice) loadSpanishVoice();
+}, { once: false });
 
 // ----------------- EXPORTACIÓN CSV Y RESPALDOS -----------------
 $('exportCsvBtn').onclick = () => {
@@ -1397,7 +1491,7 @@ $('backupFileInput').onchange = e => {
   reader.readAsText(file);
 };
 
-// Inicialización
+// Inicialización de la vista
 renderAll();
 updateVoiceUI();
 </script>
