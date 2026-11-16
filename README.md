@@ -1,5 +1,8 @@
 # 🎙️ Asistente Jules - Registro Diario por Voz
 
+> 🌐 **App en vivo (GitHub Pages):** [https://hugoandri.github.io/asistente-jules/](https://hugoandri.github.io/asistente-jules/)  
+> 📦 **Repositorio:** [https://github.com/hugoandri/asistente-jules](https://github.com/hugoandri/asistente-jules)
+
 Aplicación web ligera e interactiva para registrar movimientos de cobro y ventas organizados por clientes, códigos y precios mediante comandos de voz en español.
 
 Diseñado especialmente para facilitar el registro de pagos, ventas por catálogo, cuotas o pedidos diarios mediante comandos simples de voz como **"Oye Jules"**.
@@ -24,12 +27,12 @@ Diseñado especialmente para facilitar el registro de pagos, ventas por catálog
   - Todos los datos se guardan en el navegador (`localStorage`).
   - **Exportar a Excel (CSV):** con formato UTF-8 y separador `;` para visualización limpia en Excel.
   - **Respaldo y restauración (JSON):** para migrar datos entre dispositivos.
-- 🌐 **Sin dependencias externas:** Funciona en cualquier navegador moderno (Google Chrome o Microsoft Edge recomendados) directamente abriendo el archivo o mediante GitHub Pages.
+- 🌐 **Sin dependencias externas:** Funciona en cualquier navegador moderno (Google Chrome o Microsoft Edge recomendados) directamente desde la web o abriendo el archivo local.
 
 ---
 
 ## 🚀 Uso Rápido
 
-1. Abre `index.html` en **Google Chrome** o **Microsoft Edge**.
-2. Presiona el botón **"▶ Activar escucha continua"** y concede el permiso de micrófono.
-3. Di en voz alta: **"Oye Jules"** y sigue las preguntas.
+1. Entra directamente a [https://hugoandri.github.io/asistente-jules/](https://hugoandri.github.io/asistente-jules/) (o abre `index.html` localmente) en **Google Chrome** o **Microsoft Edge**.
+2. Presiona el botón **"▶ Activar escucha continua"** y permite el acceso al micrófono.
+3. Di en voz alta: **"Oye Jules"** y responde a las preguntas (Nombre, Código, Precio).
