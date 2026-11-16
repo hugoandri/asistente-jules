@@ -120,13 +120,18 @@ h1 { margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px;
   border: 2px solid #3b82f6;
   border-radius: 14px;
   padding: 18px;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
 }
-.voice-box.active-prompt {
+.voice-box.speaking {
+  border-color: #d97706;
+  background: #fffbeb;
+  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.15);
+}
+.voice-box.listening-user {
   border-color: #16a34a;
   background: #f0fdf4;
-  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.18);
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.2);
 }
 .voice-box.paused {
   border-color: #cbd5e1;
@@ -168,6 +173,10 @@ h1 { margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px;
   color: #15803d;
   box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25);
 }
+.status-badge.speaking {
+  background: #fef3c7;
+  color: #b45309;
+}
 .status-badge.off { background: #e2e8f0; color: #475569; }
 
 .mic-pulse-dot {
@@ -184,14 +193,14 @@ h1 { margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px;
 }
 
 .conversation-step {
-  padding: 14px;
+  padding: 16px;
   background: white;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid #e2e8f0;
   margin-top: 10px;
 }
-.conversation-step .prompt-text { font-weight: 700; color: #1e3a8a; font-size: 1.08rem; }
-.conversation-step .heard-text { font-size: 0.92rem; color: #64748b; margin-top: 6px; }
+.conversation-step .prompt-text { font-weight: 750; color: #1e3a8a; font-size: 1.15rem; line-height: 1.4; }
+.conversation-step .heard-text { font-size: 0.95rem; color: #64748b; margin-top: 8px; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
 .chip {
   background: white;
@@ -339,11 +348,11 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     <div class="header-top">
       <h1>🎙️ Asistente Jules</h1>
       <span id="speechBadge" class="status-badge listening">
-        <span class="mic-pulse-dot"></span>
+        <span class="mic-pulse-dot" id="badgeDot"></span>
         <span id="speechBadgeText">Micrófono siempre activo</span>
       </span>
     </div>
-    <div class="header-subtitle">Activación automática: solo di en voz alta <b>“Oye Jules”</b> para empezar a registrar.</div>
+    <div class="header-subtitle">Espacios pausados y tranquilos: solo di en voz alta <b>“Oye Jules”</b> para empezar.</div>
   </header>
 
   <!-- BARRA DE LIVE ACTIVO -->
@@ -351,12 +360,12 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     <div class="live-indicator">
       <div class="live-dot"></div>
       <div>
-        <span style="color:var(--text-muted); font-size:0.85rem; display:block;">Live Seleccionado:</span>
+        <span style="color:var(--text-muted); font-size:0.85rem; display:block;">Live Activo:</span>
         <span id="activeLiveTitle" style="color:var(--primary); font-size:1.15rem;">Cargando...</span>
       </div>
     </div>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-      <button class="btn btn-secondary btn-mini" id="switchLiveBtn">🔄 Cambiar / Elegir otro Live</button>
+      <button class="btn btn-secondary btn-mini" id="switchLiveBtn">🔄 Cambiar de Live</button>
       <button class="btn btn-primary btn-mini" id="newLiveQuickBtn">➕ Crear nuevo Live</button>
     </div>
   </section>
@@ -387,12 +396,12 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 
     <!-- SECCIÓN DE VOZ Y WAKE WORD ("OYE JULES") -->
     <section class="panel">
-      <h2>🗣️ Control por Voz (Activación directa: “Oye Jules”)</h2>
+      <h2>🗣️ Control por Voz (Pausado y en Español)</h2>
       <div class="voice-box" id="voiceBox">
         <div class="voice-controls">
           <button class="btn btn-secondary btn-mini" id="toggleMuteBtn">🔇 Pausar micrófono</button>
           <button class="btn btn-danger btn-mini" id="cancelFlowBtn" style="display:none;">✕ Cancelar dictado</button>
-          <span id="micHelperText" style="font-size:0.85rem; color:#1e40af; font-weight:600;">✓ El micrófono está encendido escuchando “Oye Jules”.</span>
+          <span id="micHelperText" style="font-size:0.88rem; color:#1e40af; font-weight:600;">✓ Escuchando de fondo. Di con calma: “Oye Jules”.</span>
         </div>
 
         <div class="conversation-step" id="conversationStep">
@@ -401,10 +410,9 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
         </div>
 
         <div class="chips">
-          <span class="chip">🗣️ <b>100% en español:</b> Jules te responderá y preguntará en español latinoamericano.</span>
-          <span class="chip">🔴 <b>Jules siempre preguntará el Live:</b> <i>“¿A qué Live corresponde esta planilla?”</i></span>
-          <span class="chip">💡 <b>Flujo guiado:</b> Live ➔ Nombre del cliente ➔ Código ➔ Precio.</span>
-          <span class="chip">💡 <b>Consultas de saldo:</b> “Oye Jules, ¿cuánto llevamos?” o “¿cuánto lleva Camila?”.</span>
+          <span class="chip">🕒 <b>Ritmo pausado:</b> Jules te dará 1 segundo entero después de hablar antes de escucharte.</span>
+          <span class="chip">📅 <b>Pregunta corta:</b> Jules solo preguntará <i>“¿De qué día y fecha es el Live?”</i> (puedes decir “Hoy” o “17 de noviembre”).</span>
+          <span class="chip">🗣️ <b>Paso a paso:</b> Día del Live ➔ Nombre de la persona ➔ Código ➔ Precio.</span>
         </div>
       </div>
     </section>
@@ -485,7 +493,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     </div>
     <div class="modal-field">
       <label for="liveTitleInput">Nombre / Descripción del Live:</label>
-      <input type="text" id="liveTitleInput" placeholder="Ej. Live Tarde, Live Ropa, Remate Especial">
+      <input type="text" id="liveTitleInput" placeholder="Ej. Live Tarde, Live Ropa, Remate">
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" id="cancelLiveModalBtn">Cancelar</button>
@@ -535,7 +543,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 <script>
 /**
  * ASISTENTE JULES - GESTIÓN DE PLANILLAS POR LIVES Y CALENDARIO
- * 100% en español con activación continua por "Oye Jules".
+ * Ritmo pausado con eliminación de eco acústico.
  */
 const STORAGE_KEY = 'jules_lives_db_v3';
 const PREV_KEY = 'jules_planillas_db_v2';
@@ -655,7 +663,7 @@ function renderPlanilla(live) {
       <div style="text-align:center; padding:36px 16px; color:#64748b;">
         <div style="font-size: 2.2rem;">🎙️</div>
         <p><b>Aún no hay registros en este Live (${escapeHtml(live.title)}).</b></p>
-        <p>Di <i>“Oye Jules”</i> en cualquier momento para agregar registros.</p>
+        <p>Di con calma <i>“Oye Jules”</i> para empezar a agregar registros.</p>
       </div>`;
     return;
   }
@@ -863,7 +871,7 @@ $('saveNewLiveBtn').onclick = () => {
   saveDB();
   $('newLiveModal').style.display = 'none';
   switchTab('planilla');
-  say(`Creado y seleccionado el Live: ${newLive.title}.`);
+  say(`Creado el Live: ${newLive.title}.`);
 };
 
 $('switchLiveBtn').onclick = () => {
@@ -1033,7 +1041,61 @@ function parseNumber(s) {
   return found ? (total + current) : null;
 }
 
-// ----------------- MOTOR DE VOZ: SELECCIÓN EXCLUSIVA EN ESPAÑOL -----------------
+// ----------------- PARSER DE FECHAS EN ESPAÑOL -----------------
+function parseDateFromSpeech(text) {
+  const t = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  const now = new Date();
+
+  if (/(hoy|de hoy|para hoy|el de hoy)/.test(t)) {
+    return getLocalDateString(now);
+  }
+  if (/(manana|para manana)/.test(t)) {
+    const d = new Date(now);
+    d.setDate(d.getDate() + 1);
+    return getLocalDateString(d);
+  }
+  if (/(ayer)/.test(t)) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 1);
+    return getLocalDateString(d);
+  }
+
+  const months = {
+    enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+    julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11
+  };
+
+  const match = t.match(/(\d{1,2})\s*(?:de)?\s*(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)?/);
+  if (match) {
+    const day = parseInt(match[1], 10);
+    let month = now.getMonth();
+    if (match[2] && months[match[2]] !== undefined) {
+      month = months[match[2]];
+    }
+    const d = new Date(now.getFullYear(), month, day);
+    return getLocalDateString(d);
+  }
+
+  return getLocalDateString(now);
+}
+
+function getOrCreateLiveForDate(dateStr) {
+  let live = db.lives.find(l => l.date === dateStr);
+  if (!live) {
+    live = {
+      id: generateId(),
+      date: dateStr,
+      title: `Live del ${dateStr}`,
+      records: []
+    };
+    db.lives.push(live);
+  }
+  activeLiveId = live.id;
+  saveDB();
+  return live;
+}
+
+// ----------------- MOTOR DE VOZ NATIVO EN ESPAÑOL -----------------
 let spanishVoice = null;
 
 function loadSpanishVoice() {
@@ -1041,9 +1103,6 @@ function loadSpanishVoice() {
   const voices = window.speechSynthesis.getVoices();
   if (!voices || voices.length === 0) return;
 
-  // Filtrar exclusivamente voces en español
-  // 1. Preferir español de Chile (es-CL) o Latinoamérica (es-MX, es-AR, es-CO, etc.)
-  // 2. O cualquier voz con código 'es-'
   spanishVoice = voices.find(v => v.lang === 'es-CL') ||
                  voices.find(v => v.lang.startsWith('es-') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Sabina') || v.name.includes('Elena') || v.name.includes('Dalia') || v.name.includes('Mia') || v.name.includes('Paulina'))) ||
                  voices.find(v => v.lang.toLowerCase().startsWith('es-')) ||
@@ -1057,8 +1116,9 @@ if ('speechSynthesis' in window) {
 
 // ----------------- SÍNTESIS DE VOZ Y CONVERSACIÓN -----------------
 let recognition = null;
-let micActive = true;     // Micrófono SIEMPRE ACTIVO por defecto
+let micActive = true;
 let isSpeaking = false;
+let speechCooldown = false;
 let isListening = false;
 
 const STEP = {
@@ -1074,9 +1134,19 @@ let tempRecord = { liveId: null, liveTitle: '', name: '', code: '', price: 0 };
 
 function say(text, callback) {
   $('julesPrompt').innerHTML = text;
+  
   if ('speechSynthesis' in window) {
     isSpeaking = true;
     speechSynthesis.cancel();
+
+    // 1. CERRAR EL MICRÓFONO INMEDIATAMENTE PARA EVITAR QUE SE ESCUCHE A SÍ MISMO
+    if (recognition && isListening) {
+      try { recognition.abort(); } catch (e) {}
+      isListening = false;
+    }
+
+    updateVoiceUI();
+
     if (!spanishVoice) loadSpanishVoice();
 
     const clean = text.replace(/<[^>]*>/g, '');
@@ -1089,19 +1159,31 @@ function say(text, callback) {
       u.lang = 'es-CL';
     }
 
-    u.rate = 1.0;
+    // Ritmo pausado y relajado (0.90) para que no hable apresurado
+    u.rate = 0.90;
     u.pitch = 1.0;
 
-    const resumeListening = () => {
+    const onFinishedSpeaking = () => {
       isSpeaking = false;
       if (callback) callback();
-      if (micActive && recognition) {
-        try { recognition.start(); } catch (e) {}
-      }
+
+      // 2. ESPACIO AMPLIO: Esperar 1 segundo completo tras hablar antes de escuchar al usuario
+      speechCooldown = true;
+      updateVoiceUI();
+
+      setTimeout(() => {
+        speechCooldown = false;
+        if (micActive && recognition) {
+          try {
+            recognition.start();
+          } catch (e) {}
+        }
+        updateVoiceUI();
+      }, 1000);
     };
 
-    u.onend = resumeListening;
-    u.onerror = resumeListening;
+    u.onend = onFinishedSpeaking;
+    u.onerror = onFinishedSpeaking;
     speechSynthesis.speak(u);
   } else {
     if (callback) callback();
@@ -1118,28 +1200,43 @@ function updateVoiceUI() {
 
   if (!micActive) {
     badge.className = 'status-badge off';
-    badgeText.textContent = 'Micrófono pausado';
+    badgeText.textContent = 'Micrófono apagado';
     toggleBtn.textContent = '▶ Reanudar micrófono';
     toggleBtn.className = 'btn btn-primary btn-mini';
     box.className = 'voice-box paused';
     cancelBtn.style.display = 'none';
-    helper.textContent = 'El micrófono está apagado. Pulsa reanudar para volver a escuchar.';
+    helper.textContent = 'El micrófono está apagado.';
     helper.style.color = '#64748b';
+  } else if (isSpeaking) {
+    badge.className = 'status-badge speaking';
+    badgeText.textContent = '🔊 Jules está hablando...';
+    toggleBtn.textContent = '🔇 Pausar micrófono';
+    toggleBtn.className = 'btn btn-secondary btn-mini';
+    box.className = 'voice-box speaking';
+    cancelBtn.style.display = 'inline-flex';
+    helper.textContent = '🔊 Esperando que Jules termine de hablar (micrófono cerrado)...';
+    helper.style.color = '#b45309';
+  } else if (speechCooldown) {
+    badge.className = 'status-badge speaking';
+    badgeText.textContent = '⏳ Preparando micrófono...';
+    box.className = 'voice-box speaking';
+    helper.textContent = '⏳ Pausa de 1 segundo para darte espacio...';
+    helper.style.color = '#b45309';
   } else {
     badge.className = 'status-badge listening';
-    badgeText.textContent = 'Micrófono siempre activo';
+    badgeText.textContent = '🎤 Te escucho con calma';
     toggleBtn.textContent = '🔇 Pausar micrófono';
     toggleBtn.className = 'btn btn-secondary btn-mini';
 
     if (currentStep !== STEP.IDLE) {
-      box.className = 'voice-box active-prompt';
+      box.className = 'voice-box listening-user';
       cancelBtn.style.display = 'inline-flex';
-      helper.textContent = '🔴 En conversación con Jules... respondiendo a las preguntas.';
+      helper.textContent = '🟢 Micrófono abierto. Habla con calma a tu propio ritmo.';
       helper.style.color = '#15803d';
     } else {
       box.className = 'voice-box';
       cancelBtn.style.display = 'none';
-      helper.textContent = '✓ Escuchando de fondo. Di en voz alta “Oye Jules” para empezar.';
+      helper.textContent = '✓ Escuchando de fondo. Di con calma “Oye Jules” para empezar.';
       helper.style.color = '#1e40af';
     }
   }
@@ -1149,7 +1246,7 @@ function cancelVoiceFlow() {
   currentStep = STEP.IDLE;
   tempRecord = { liveId: null, liveTitle: '', name: '', code: '', price: 0 };
   updateVoiceUI();
-  say('Cancelado. Estoy en espera. Di “Oye Jules” cuando quieras registrar.');
+  say('Cancelado. Estoy en espera. Di “Oye Jules” cuando quieras.');
 }
 $('cancelFlowBtn').onclick = () => cancelVoiceFlow();
 
@@ -1158,7 +1255,7 @@ $('toggleMuteBtn').onclick = () => {
   if (!micActive) {
     currentStep = STEP.IDLE;
     if (recognition) {
-      try { recognition.stop(); } catch (e) {}
+      try { recognition.abort(); } catch (e) {}
     }
     if ('speechSynthesis' in window) speechSynthesis.cancel();
   } else {
@@ -1168,36 +1265,10 @@ $('toggleMuteBtn').onclick = () => {
   updateVoiceUI();
 };
 
-function resolveOrCreateLiveByName(rawTitle) {
-  const today = getLocalDateString();
-  const clean = rawTitle.replace(/^(al|para|el|en\s+el)\s+/i, '').trim();
-  const lower = clean.toLowerCase();
-
-  let found = db.lives.find(l => l.date === today && l.title.toLowerCase() === lower);
-  if (!found) {
-    found = db.lives.find(l => l.title.toLowerCase().includes(lower) || lower.includes(l.title.toLowerCase()));
-  }
-
-  if (found) {
-    activeLiveId = found.id;
-    saveDB();
-    return found;
-  }
-
-  const newL = {
-    id: generateId(),
-    date: today,
-    title: capitalize(clean),
-    records: []
-  };
-  db.lives.push(newL);
-  activeLiveId = newL.id;
-  saveDB();
-  return newL;
-}
-
 function handleSpeech(rawText) {
-  if (isSpeaking) return;
+  // BLOQUEO ABSOLUTO DE ECO: Si Jules habla o está en periodo de enfriamiento, no procesar nada
+  if (isSpeaking || speechCooldown) return;
+
   const heard = rawText.trim();
   $('julesHeard').textContent = `Escuché: “${heard}”`;
   const lower = heard.toLowerCase();
@@ -1208,94 +1279,79 @@ function handleSpeech(rawText) {
     return;
   }
 
-  // DETECCIÓN AMPLIA Y FONÉTICA DE "OYE JULES"
+  // DETECCIÓN AMPLIA DE "OYE JULES"
   const wakeRegex = /\b(oye\s*(jules|yuls|yules|yul|yuli|jule|chuls|julios|julius)|hola\s*(jules|yuls|yules)|(jules|yuls|yules))\b/i;
   const hasWake = wakeRegex.test(lower);
 
   // 1. ESTADO IDLE (esperando "Oye Jules")
   if (currentStep === STEP.IDLE) {
-    if (!hasWake) return; // Ignorar ruidos o charlas que no contengan la palabra de activación
+    if (!hasWake) return;
 
     let command = lower.replace(wakeRegex, '').trim();
 
-    // Consulta de saldos acumulados
+    // Consultas de saldos
     if (/(cu[aá]nto|total|acumulado|llevamos)/.test(command) && !/(c[oó]digo|precio|registra|anota)/.test(command)) {
       const live = getActiveLive();
-      if (!live) { say('No hay ningún Live seleccionado actualmente.'); return; }
+      if (!live) { say('No hay ningún Live seleccionado.'); return; }
       const total = (live.records || []).reduce((s, r) => s + (Number(r.price) || 0), 0);
-      say(`En el ${live.title} llevamos ${money(total)} en ${(live.records || []).length} ventas.`);
+      say(`Llevamos ${money(total)} acumulados en ${(live.records || []).length} ventas.`);
       return;
     }
 
-    // Consulta por persona
-    const personQuery = command.match(/(?:cu[aá]nto lleva|cu[aá]nto ha puesto|total de)\s+([a-záéíóúñ\s]+)/i);
-    if (personQuery) {
+    if (/(cu[aá]nto lleva|cu[aá]nto ha puesto|total de)\s+([a-záéíóúñ\s]+)/i.test(command)) {
+      const match = command.match(/(?:cu[aá]nto lleva|cu[aá]nto ha puesto|total de)\s+([a-záéíóúñ\s]+)/i);
+      const qName = match[1].replace(/[?¿!]/g, '').trim();
       const live = getActiveLive();
-      const qName = personQuery[1].replace(/[?¿!]/g, '').trim();
       if (live) {
         const pRecs = (live.records || []).filter(r => r.name.toLowerCase() === qName.toLowerCase());
         if (pRecs.length) {
           const sub = pRecs.reduce((s, r) => s + r.price, 0);
-          say(`${qName} lleva un total de ${money(sub)} en el ${live.title}.`);
+          say(`${qName} lleva ${money(sub)}.`);
           return;
         }
       }
-      say(`No encuentro registros para ${qName} en el Live actual.`);
+      say(`No encuentro registros para ${qName}.`);
       return;
     }
 
-    // SIEMPRE PREGUNTA EL LIVE
+    // PREGUNTAR ÚNICAMENTE DÍA Y FECHA DEL LIVE
     currentStep = STEP.AWAIT_LIVE;
     updateVoiceUI();
-
-    const currentLive = getActiveLive();
-    if (currentLive) {
-      say(`¡Hola! <b>¿A qué Live corresponde esta planilla?</b> (Puedes decir “el mismo” para ${currentLive.title}, o decir el nombre de otro Live).`);
-    } else {
-      say('¡Hola! <b>¿A qué Live corresponde esta planilla?</b>');
-    }
+    say('¡Hola! ¿De qué día y fecha es el Live?');
     return;
   }
 
-  // 2. PASO 1: ESPERANDO EL LIVE
+  // 2. PASO 1: ESPERANDO DÍA Y FECHA DEL LIVE
   if (currentStep === STEP.AWAIT_LIVE) {
-    let cleanLiveName = heard.replace(/^(es|para|el|al|en\s+el)\s+/i, '').replace(/[.?,]/g, '').trim();
-    if (!cleanLiveName || cleanLiveName.length < 2) {
-      say('No alcancé a oír el nombre del Live. Por favor repítelo (por ejemplo: “Live Tarde” o “el mismo”).');
-      return;
-    }
-
-    let targetLive = null;
-    if (/(el\s+mismo|este|actual|continua|seguir|si)/i.test(cleanLiveName)) {
-      targetLive = getActiveLive();
-    } else {
-      targetLive = resolveOrCreateLiveByName(cleanLiveName);
-    }
-
-    if (!targetLive) {
-      targetLive = resolveOrCreateLiveByName('Live Principal');
-    }
+    const targetDate = parseDateFromSpeech(heard);
+    const targetLive = getOrCreateLiveForDate(targetDate);
 
     tempRecord.liveId = targetLive.id;
     tempRecord.liveTitle = targetLive.title;
 
     currentStep = STEP.AWAIT_NAME;
     updateVoiceUI();
-    say(`Anotando para <b>${targetLive.title}</b>. ¿Cuál es el <b>nombre</b> de la persona?`);
+
+    // Fecha legible en español
+    const parts = targetDate.split('-');
+    const dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    const dateFormatted = dateObj.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
+
+    say(`Anotando para el Live del ${dateFormatted}. ... ¿Cuál es el nombre de la persona?`);
     return;
   }
 
-  // 3. PASO 2: ESPERANDO NOMBRE
+  // 3. PASO 2: ESPERANDO NOMBRE DE LA PERSONA
   if (currentStep === STEP.AWAIT_NAME) {
     let cleanName = heard.replace(/^(es|para|el\s+nombre\s+es|cliente|anota\s+a)\s+/i, '').replace(/[.?,]/g, '').trim();
     if (!cleanName || cleanName.length < 2) {
-      say('No entendí el nombre. Por favor repite el nombre de la persona.');
+      say('Por favor repite el nombre de la persona.');
       return;
     }
     tempRecord.name = capitalize(cleanName);
     currentStep = STEP.AWAIT_CODE;
     updateVoiceUI();
-    say(`Perfecto, <b>${tempRecord.name}</b>. ¿Cuál es el <b>código</b>?`);
+    say(`Perfecto, ${tempRecord.name}. ... ¿Cuál es el código?`);
     return;
   }
 
@@ -1309,7 +1365,7 @@ function handleSpeech(rawText) {
     tempRecord.code = cleanCode;
     currentStep = STEP.AWAIT_PRICE;
     updateVoiceUI();
-    say(`Código <b>${tempRecord.code}</b>. ¿Y cuál es el <b>precio</b>?`);
+    say(`Código ${tempRecord.code}. ... ¿Y cuál es el precio?`);
     return;
   }
 
@@ -1317,7 +1373,7 @@ function handleSpeech(rawText) {
   if (currentStep === STEP.AWAIT_PRICE) {
     const price = parseNumber(heard);
     if (!price || price <= 0) {
-      say('No entendí el precio. Por favor di el monto en pesos (por ejemplo: “cinco mil” o “12000”).');
+      say('No entendí el precio. Por favor di el monto en pesos.');
       return;
     }
 
@@ -1329,7 +1385,7 @@ function handleSpeech(rawText) {
     const pRecs = (live.records || []).filter(r => r.name.toLowerCase() === tempRecord.name.toLowerCase());
     const subtotal = pRecs.reduce((s, r) => s + r.price, 0);
 
-    const msg = `Listo. Registrado en <b>${live.title}</b> para <b>${tempRecord.name}</b>, código <b>${tempRecord.code}</b> por <b>${money(tempRecord.price)}</b>. Su total es <b>${money(subtotal)}</b>.`;
+    const msg = `Listo. Registrado para ${tempRecord.name}, código ${tempRecord.code} por ${money(tempRecord.price)}. Su total es ${money(subtotal)}.`;
     currentStep = STEP.IDLE;
     tempRecord = { liveId: null, liveTitle: '', name: '', code: '', price: 0 };
     updateVoiceUI();
@@ -1337,7 +1393,7 @@ function handleSpeech(rawText) {
   }
 }
 
-// ----------------- INICIALIZACIÓN AUTOMÁTICA DEL RECONOCEDOR -----------------
+// ----------------- RECONOCEDOR DE VOZ NATIVO -----------------
 function initSpeechRecognition() {
   if (recognition) return;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1357,6 +1413,9 @@ function initSpeechRecognition() {
   };
 
   recognition.onresult = e => {
+    // Si Jules está hablando o en el segundo de pausa posterior, se ignora todo
+    if (isSpeaking || speechCooldown) return;
+
     for (let i = e.resultIndex; i < e.results.length; ++i) {
       if (e.results[i].isFinal) {
         handleSpeech(e.results[i][0].transcript);
@@ -1367,7 +1426,7 @@ function initSpeechRecognition() {
   recognition.onerror = e => {
     isListening = false;
     if (e.error === 'not-allowed') {
-      $('julesPrompt').innerHTML = '⚠️ Micrófono bloqueado. Habilita el permiso de micrófono en la barra de direcciones.';
+      $('julesPrompt').innerHTML = '⚠️ Micrófono bloqueado. Habilita el permiso en el navegador.';
       micActive = false;
       updateVoiceUI();
     }
@@ -1375,33 +1434,31 @@ function initSpeechRecognition() {
 
   recognition.onend = () => {
     isListening = false;
-    // Si debe seguir escuchando y Jules no está hablando, reiniciar de inmediato
-    if (micActive && !isSpeaking) {
+    // Solo reiniciar si el micrófono está activo y Jules no está hablando ni en cooldown
+    if (micActive && !isSpeaking && !speechCooldown) {
       setTimeout(() => {
         try { recognition.start(); } catch (err) {}
-      }, 100);
+      }, 150);
     }
   };
 }
 
 function startListeningEngine() {
   initSpeechRecognition();
-  if (recognition && !isListening) {
+  if (recognition && !isListening && !isSpeaking && !speechCooldown) {
     try {
       recognition.start();
     } catch (e) {}
   }
 }
 
-// Iniciar automáticamente al cargar la página
 window.addEventListener('load', () => {
   startListeningEngine();
   loadSpanishVoice();
 });
 
-// Desbloqueo garantizado de audio/micrófono con el primer toque en pantalla
 document.addEventListener('click', () => {
-  if (micActive && !isListening && recognition) {
+  if (micActive && !isListening && !isSpeaking && !speechCooldown && recognition) {
     startListeningEngine();
   }
   if (!spanishVoice) loadSpanishVoice();
